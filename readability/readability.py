@@ -140,8 +140,8 @@ class Document:
         # Things like preambles, content split by ads that we removed, etc.
 
         sibling_score_threshold = max([10, best_candidate['content_score'] * 0.2])
-        body = B.BODY()
-        html = B.HTML(body)
+        article = B.DIV()
+        article.attrib['id'] = 'article'
         best_elem = best_candidate['elem']
         for sibling in best_elem.getparent().getchildren():
             #if isinstance(sibling, NavigableString): continue#in lxml there no concept of simple text 
@@ -163,11 +163,11 @@ class Document:
                     append = True
 
             if append:
-                body.append(sibling)
+                article.append(sibling)
 
-        #if body is not None: 
-        #    body.append(best_elem)
-        return html
+        #if article is not None: 
+        #    article.append(best_elem)
+        return article
 
     def select_best_candidate(self, candidates):
         sorted_candidates = sorted(candidates.values(), key=lambda x: x['content_score'], reverse=True)

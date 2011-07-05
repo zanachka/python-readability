@@ -59,6 +59,17 @@ def text_length(i):
 class Unparseable(ValueError):
     pass
 
+class Summary:
+    '''
+    The type of object returned by Document.summary().  This includes the
+    confidence level we have in our summary.  If this is low (<35), our summary
+    may not be valid, though we did our best.
+    '''
+
+    def __init__(self, confidence, html):
+        self.confidence = confidence
+        self.html = html
+
 class Document:
     TEXT_LENGTH_THRESHOLD = 25
     RETRY_LENGTH = 250
@@ -111,6 +122,7 @@ class Document:
                 
                 best_candidate = self.select_best_candidate(candidates)
                 if best_candidate:
+                    confidence = best_candidate['content_score']
                     article = self.get_article(candidates, best_candidate)
                 else:
                     if ruthless:
@@ -121,6 +133,7 @@ class Document:
                         continue
                     else:
                         logging.debug("Ruthless and lenient parsing did not work. Returning raw html")
+                        confidence = 0;
                         article = self.html.find('body') or self.html
 
                 cleaned_article = self.sanitize(article, candidates)
@@ -129,7 +142,7 @@ class Document:
                     ruthless = False
                     continue # try again
                 else:
-                    return cleaned_article
+                    return Summary(confidence, cleaned_article)
         except StandardError, e:
             #logging.exception('error getting summary: ' + str(traceback.format_exception(*sys.exc_info())))
             logging.exception('error getting summary: ' )

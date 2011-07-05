@@ -54,6 +54,16 @@ As a Library
     readable_article = Document(html).summary()
     readable_title = Document(html).short_title()
 
+You can also use the `get_summary_with_metadata` method to get back other
+metadata such as the confidence score found while processing the input.
+
+::
+
+    doc = Document(html).get_summary_with_metadata()
+    print doc.html
+    print doc.confidence
+
+
 Optional `Document` keyword argument:
 
 - attributes:

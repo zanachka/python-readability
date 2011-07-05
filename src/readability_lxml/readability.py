@@ -4,6 +4,7 @@ import re
 import sys
 
 from collections import defaultdict
+from collections import namedtuple
 from lxml.etree import tostring
 from lxml.etree import tounicode
 from lxml.html import document_fromstring
@@ -87,6 +88,11 @@ def text_length(i):
     return len(clean(i.text_content() or ""))
 
 
+# We want to change over the Summary to a nametuple to be more memory
+# effecient and because it doesn't need to be mutable.
+Summary = namedtuple('Summary', ['html', 'confidence'])
+
+
 class Document:
     """Class to build a etree document out of html."""
     TEXT_LENGTH_THRESHOLD = 25
@@ -139,11 +145,33 @@ class Document:
     def short_title(self):
         return shorten_title(self.html)
 
-    def summary(self, enclose_with_html_tag=True):
-        """Generate the summary of the html docuemnt
+    def get_summary_with_metadata(self, enclose_with_html_tag=True):
+        """Parse the input content and return a Summary object
 
-        :param enclose_with_html_tag: return only the div of the document,
-        don't wrap in html and body tags.
+        :param enclose_with_html_tag: Bool do you want a full <html> document
+        or just the <div> html partial.
+
+        """
+        summary = self._summary(enclose_with_html_tag=enclose_with_html_tag)
+        # For this call return the raw Summary object.
+        return summary
+
+    def summary(self, enclose_with_html_tag=True):
+        """Generate the summary of the html document
+
+        :param enclose_with_html_tag: Bool do you want a full <html> document
+        or just the <div> html partial.
+
+        """
+        summary = self._summary(enclose_with_html_tag=enclose_with_html_tag)
+        # Only return the html to be consistent with the backwards api.
+        return summary.html
+
+    def _summary(self, enclose_with_html_tag=True):
+        """Helper used in a few places to generate the summary of the content
+
+        :param enclose_with_html_tag: Bool do you want a full <html> document
+        or just the <div> html partial.
 
         """
         try:
@@ -162,6 +190,7 @@ class Document:
                 best_candidate = self.select_best_candidate(candidates)
 
                 if best_candidate:
+                    confidence = best_candidate['content_score']
                     article = self.get_article(candidates, best_candidate,
                             enclose_with_html_tag=enclose_with_html_tag)
                 else:
@@ -177,7 +206,8 @@ class Document:
                         log.debug(
                             ("Ruthless and lenient parsing did not work. "
                              "Returning raw html"))
-                        article = self.html.find('body')
+                        article = self.html.find('body') or self.html
+                        confidence = 0
                         if article is None:
                             article = self.html
                 cleaned_article = self.sanitize(article, candidates)
@@ -191,7 +221,7 @@ class Document:
                     # Loop through and try again.
                     continue
                 else:
-                    return cleaned_article
+                    return Summary(confidence=confidence, html=cleaned_article)
         except StandardError, e:
             log.exception('error getting summary: ')
             raise Unparseable(str(e)), None, sys.exc_info()[2]

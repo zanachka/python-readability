@@ -36,3 +36,15 @@ class TestArticleOnly(unittest.TestCase):
         doc = Document(sample, url='http://sportsillustrated.cnn.com/baseball/mlb/gameflash/2012/04/16/40630_preview.html')
         res = doc.summary(enclose_with_html_tag=False)
         self.assertEqual('<div><div class="', res[0:17])
+
+    def test_si_sample_full_summary(self):
+        """We should parse the doc and get a full summary with confidence"""
+        sample = load_sample('si-game.sample.html')
+        doc = Document(sample, url='http://sportsillustrated.cnn.com/baseball/mlb/gameflash/2012/04/16/40630_preview.html')
+        res = doc.get_summary_with_metadata(enclose_with_html_tag=False)
+        self.assertTrue(hasattr(res, 'html'), 'res should have an html attrib')
+        self.assertTrue(hasattr(res, 'confidence'), 'res should have an html attrib')
+        self.assertEqual('<div><div class="', res.html[0:17])
+        self.assertTrue(res.confidence > 50,
+            'The confidence score should be larger than 50: ' + str(res.confidence))
+

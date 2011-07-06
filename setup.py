@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="lxml-readability",
-    version="0.2dev",
+    version="0.3dev",
     author="Yuri Baburov",
     author_email="burchik+github@gmail.com",
     description="python port of arc90's readability bookmarklet",

@@ -295,7 +295,11 @@ class Document:
         for elem in self.html.iter():
             s = "%s %s" % (elem.get('class', ''), elem.get('id', ''))
             #self.debug(s)
-            if REGEXES['unlikelyCandidatesRe'].search(s) and (not REGEXES['okMaybeItsACandidateRe'].search(s)) and elem.tag != 'body':
+            if (REGEXES['unlikelyCandidatesRe'].search(s) and
+                    (not REGEXES['okMaybeItsACandidateRe'].search(s)) and
+                    elem.tag != 'body' and
+                    elem.getparent() is not None
+                    ):
                 self.debug("Removing unlikely candidate - %s" % describe(elem))
                 elem.drop_tree()
 

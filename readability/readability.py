@@ -136,7 +136,10 @@ class Document:
                         confidence = 0;
                         article = self.html.find('body') or self.html
 
-                cleaned_article = self.sanitize(article, candidates)
+                unicode_cleaned_article = self.sanitize(article, candidates)
+                cleaned_doc = fragment_fromstring(unicode_cleaned_article)
+                cleaned_article = tostring(cleaned_doc)
+
                 of_acceptable_length = len(cleaned_article or '') >= (self.options['retry_length'] or self.RETRY_LENGTH)
                 if ruthless and not of_acceptable_length:
                     ruthless = False

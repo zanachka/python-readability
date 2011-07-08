@@ -12,6 +12,7 @@ from readability_lxml import readability
 ORIGINAL_SUFFIX = '-orig.html'
 READABLE_SUFFIX = '-rdbl.html'
 RESULT_SUFFIX = '-result.html'
+DIFF_SUFFIX = '-diff.html'
 
 TESTDIR = os.path.dirname(__file__)
 TEST_DATA_PATH = os.path.join(TESTDIR, 'test_data')
@@ -103,59 +104,69 @@ def execute_test(test_data):
     return ReadabilityTestResult(test_data, summary.html, diff)
 
 
-DIFF_CSS = '''
-    #article {
-        margin: 0 auto;
-        max-width: 705px;
-        min-width: 225px;
-        font-family: Georgia, 'Times New Roman', serif;
-        font-size: 19px;
-        line-height: 29px;
-    }
+CSS = '''
+#article {
+    margin: 0 auto;
+    max-width: 705px;
+    min-width: 225px;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 19px;
+    line-height: 29px;
+}
 
-    #article p {
-        font-size: 19px;
-        line-height: 29px;
-        margin: 19px 0px 19px 0px;
-    }
+#article p {
+    font-size: 19px;
+    line-height: 29px;
+    margin: 19px 0px 19px 0px;
+}
 
-    ins {
-        background-color: #C6F7C3;
-        text-decoration: none;
-    }
+ins {
+    background-color: #C6F7C3;
+    text-decoration: none;
+}
 
-    ins img {
-        border-width: 3px;
-        border-style: dotted;
-        border-color: #51B548;
-    }
+ins img {
+    border-width: 3px;
+    border-style: dotted;
+    border-color: #51B548;
+}
 
-    del {
-        background-color: #F7C3C3;
-        text-decoration: none;
-    }
+del {
+    background-color: #F7C3C3;
+    text-decoration: none;
+}
 
-    del img {
-        border-width: 3px;
-        border-style: dotted;
-        border-color: #D12626;
-    }
+del img {
+    border-width: 3px;
+    border-style: dotted;
+    border-color: #D12626;
+}
 '''
 
-
-def add_diff_css(doc):
-    style = B.STYLE(DIFF_CSS, type = 'text/css')
+def add_css(doc):
+    style = B.STYLE(CSS, type = 'text/css')
     head = B.HEAD(style)
     doc.insert(0, head)
 
 
+def write_output_fragment(fragment, output_dir_path, test_name, suffix):
+    doc = lxml.html.document_fromstring(fragment)
+    add_css(doc)
+    html = lxml.html.tostring(doc)
+    file_name = ''.join([test_name, suffix])
+    path = os.path.join(output_dir_path, file_name)
+    with open(path, 'w') as f:
+        f.write(html)
+
+
 def write_result(output_dir_path, result):
-    doc = lxml.html.document_fromstring(result.diff_html)
-    add_diff_css(doc)
-    output_file = ''.join([result.test_data.test.name, RESULT_SUFFIX])
-    output_path = os.path.join(output_dir_path, output_file)
-    with open(output_path, 'w') as f:
-        f.write(lxml.html.tostring(doc))
+    test_name = result.test_data.test.name
+    specs = [
+            (result.diff_html, DIFF_SUFFIX),
+            (result.result_html, RESULT_SUFFIX)
+            ]
+    for (html, suffix) in specs:
+        write_output_fragment(html, output_dir_path, test_name, suffix)
 
 
 def run_readability_tests():

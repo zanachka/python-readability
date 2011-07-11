@@ -54,12 +54,6 @@ def read_yaml(path):
         return yaml.load(f)
 
 
-def strip_with_suffix(suffix, files):
-    filtered = [x for x in files if x.endswith(suffix)]
-    stripped = [x.replace(suffix, '') for x in filtered]
-    return set(stripped)
-
-
 def check_missing(lhs, rhs, rhs_description):
     only_lhs = lhs.difference(rhs)
     if len(only_lhs) != 0:
@@ -199,90 +193,6 @@ def run_readability_tests():
             test_data = load_test_data(test)
             result = execute_test(test_data)
             write_result(TEST_OUTPUT_PATH, result)
-
-
-class TestStripWithSuffix(unittest.TestCase):
-
-    def test_no_files(self):
-        expected = set()
-        actual = strip_with_suffix('.test', [])
-        self.assertEqual(expected, actual)
-
-    def test_files(self):
-        expected = {'foo', 'bar'}
-        actual = strip_with_suffix('.test', ['foo.test', 'bar.test'])
-        self.assertEqual(expected, actual)
-
-    def test_extra_files(self):
-        expected = {'foo', 'bar'}
-        actual = strip_with_suffix('.test', ['foo.test', 'bar.test', 'extra'])
-        self.assertEqual(expected, actual)
-
-
-class TestResolveTestNames(unittest.TestCase):
-
-    def test_no_files(self):
-        expected = set()
-        actual = resolve_test_names([])
-        self.assertEqual(expected, actual)
-
-    def test_files(self):
-        expected = {'foo', 'bar'}
-        files = [
-                'foo-orig.html',
-                'foo-rdbl.html',
-                'bar-orig.html',
-                'bar-rdbl.html'
-                ]
-        actual = resolve_test_names(files)
-        self.assertEqual(expected, actual)
-
-    def test_missing_rdbl(self):
-        files = [
-                'foo-orig.html',
-                'foo-rdbl.html',
-                'bar-orig.html'
-                ]
-        with self.assertRaisesRegexp(
-                Exception,
-                r'\(bar\) is missing -rdbl.html file'
-                ):
-            resolve_test_names(files)
-
-    def test_missing_multiple_rdbl(self):
-        files = [
-                'foo-orig.html',
-                'bar-orig.html'
-                ]
-        with self.assertRaisesRegexp(
-                Exception,
-                r'\(foo, bar\) are missing -rdbl.html files'
-                ):
-            resolve_test_names(files)
-
-    def test_missing_orig(self):
-        files = [
-                'foo-orig.html',
-                'foo-rdbl.html',
-                'bar-rdbl.html'
-                ]
-        with self.assertRaisesRegexp(
-                Exception,
-                r'\(bar\) is missing -orig.html file'
-                ):
-            resolve_test_names(files)
-
-    def test_missing_multiple_orig(self):
-        files = [
-                'foo-rdbl.html',
-                'bar-rdbl.html'
-                ]
-        with self.assertRaisesRegexp(
-                Exception,
-                r'\(foo, bar\) are missing -orig.html files'
-                ):
-            resolve_test_names(files)
-
 
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == 'unittest':

@@ -20,6 +20,7 @@ YAML_EXTENSION = '.yaml'
 TESTDIR = os.path.dirname(__file__)
 TEST_DATA_PATH = os.path.join(TESTDIR, 'test_data')
 TEST_OUTPUT_PATH = os.path.join(TESTDIR, 'test_output')
+TEST_SUMMARY_PATH = os.path.join(TEST_OUTPUT_PATH, 'index.html')
 
 
 class ReadabilityTest:
@@ -73,9 +74,12 @@ def make_readability_test(dir_path, name, spec_dict):
 
 
 def load_test_data(test):
-    orig = open(test.orig_path, 'r').read()
-    rdbl = open(test.rdbl_path, 'r').read()
-    return ReadabilityTestData(test, orig, rdbl)
+    if test.enabled:
+        orig = open(test.orig_path, 'r').read()
+        rdbl = open(test.rdbl_path, 'r').read()
+        return ReadabilityTestData(test, orig, rdbl)
+    else:
+        return None
 
 
 def load_readability_tests(dir_path, files):
@@ -90,14 +94,122 @@ def load_readability_tests(dir_path, files):
 
 
 def execute_test(test_data):
-    doc = readability.Document(test_data.orig_html)
-    summary = doc.summary_with_metadata()
-    benchmark_doc = (test_data.rdbl_html, 'benchmark')
-    result_doc = (summary.html, 'result')
-    # diff = lxml.html.diff.html_annotate([benchmark_doc, result_doc])
-    diff = lxml.html.diff.htmldiff(test_data.rdbl_html, summary.html)
-    # diff = test_data.orig_html
-    return ReadabilityTestResult(test_data, summary.html, diff)
+    if test_data is None:
+        return None
+    else:
+        doc = readability.Document(test_data.orig_html)
+        summary = doc.summary()
+        benchmark_doc = (test_data.rdbl_html, 'benchmark')
+        result_doc = (summary.html, 'result')
+        diff = lxml.html.diff.htmldiff(test_data.rdbl_html, summary.html)
+        return ReadabilityTestResult(test_data, summary.html, diff)
+
+
+SUMMARY_CSS = '''
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+    font-family: Georgia, 'Times New Roman', serif;
+}
+table {
+    margin: auto;
+}
+.skipped {
+    color: gray;
+}
+td, th {
+    font-size: 1.2em;
+    border: 1px solid black;
+    padding: 3px 7px 2px 7px;
+}
+th {
+    font-size: 16px;
+    text-align: left;
+    padding-top: 5px;
+    padding-bottom: 4px;
+}
+'''
+
+
+def element_string_lengths(elems):
+    return [len(e.xpath('string()')) for e in elems]
+
+
+class ResultSummary():
+
+    def __init__(self, result):
+        doc = lxml.html.fragment_fromstring(result.diff_html)
+        insertions = doc.xpath('//ins')
+        insertion_lengths = element_string_lengths(insertions)
+        deletions = doc.xpath('//del')
+        deletion_lengths = element_string_lengths(deletions)
+        self.insertions = sum(insertion_lengths)
+        self.insertion_blocks = len(insertions)
+        self.deletions = sum(deletion_lengths)
+        self.deletion_blocks = len(deletions)
+        pass
+
+
+def make_summary_row(test, result):
+    def data(suffix):
+        return os.path.join('..', TEST_DATA_PATH, test.name + suffix)
+    def output(suffix):
+        return test.name + suffix
+    if test.enabled:
+        s = ResultSummary(result)
+        return B.TR(
+                B.TD(test.name),
+                B.TD('%d (%d)' % (s.insertions, s.insertion_blocks)),
+                B.TD('%d (%d)' % (s.deletions, s.deletion_blocks)),
+                B.TD(
+                    B.A('original', href = data(ORIGINAL_SUFFIX)),
+                    ' ',
+                    B.A('benchmark', href = output(READABLE_SUFFIX)),
+                    ' ',
+                    B.A('result', href = output(RESULT_SUFFIX)),
+                    ' ',
+                    B.A('diff', href = output(DIFF_SUFFIX))
+                    )
+                )
+    else:
+        return B.TR(
+                B.CLASS('skipped'),
+                B.TD('%s (SKIPPED)' % test.name),
+                B.TD('N/A'),
+                B.TD('N/A'),
+                B.TD('N/A')
+                )
+
+
+def make_summary_doc(tests_w_results):
+    tbody = B.TBODY(
+            B.TR(
+                B.TH('Test Name'),
+                B.TH('Inserted (in # of blocks)'),
+                B.TH('Deleted (in # of blocks)'),
+                B.TH('Links')
+                )
+            )
+    for (test, result) in tests_w_results:
+        row = make_summary_row(test, result)
+        tbody.append(row)
+    return B.HTML(
+            B.HEAD(
+                B.TITLE('Readability Test Summary'),
+                B.STYLE(SUMMARY_CSS, type = 'text/css')
+                ),
+            B.BODY(
+                B.TABLE(
+                    tbody
+                    )
+                )
+            )
+
+
+def write_summary(path, tests_w_results):
+    doc = make_summary_doc(tests_w_results)
+    with open(path, 'w') as f:
+        f.write(lxml.html.tostring(doc))
 
 
 CSS = '''
@@ -158,6 +270,7 @@ def write_output_fragment(fragment, output_dir_path, test_name, suffix):
 def write_result(output_dir_path, result):
     test_name = result.test_data.test.name
     specs = [
+            (result.test_data.rdbl_html, READABLE_SUFFIX),
             (result.diff_html, DIFF_SUFFIX),
             (result.result_html, RESULT_SUFFIX)
             ]
@@ -176,12 +289,13 @@ def print_test_info(test):
 def run_readability_tests():
     files = os.listdir(TEST_DATA_PATH)
     tests = load_readability_tests(TEST_DATA_PATH, files)
-    for test in tests:
+    test_datas = [load_test_data(t) for t in tests]
+    results = [execute_test(t) for t in test_datas]
+    for (test, result) in zip(tests, results):
         print_test_info(test)
-        if test.enabled:
-            test_data = load_test_data(test)
-            result = execute_test(test_data)
+        if result:
             write_result(TEST_OUTPUT_PATH, result)
+    write_summary(TEST_SUMMARY_PATH, zip(tests, results))
 
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == 'unittest':

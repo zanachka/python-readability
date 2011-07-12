@@ -54,17 +54,6 @@ def read_yaml(path):
         return yaml.load(f)
 
 
-def check_missing(lhs, rhs, rhs_description):
-    only_lhs = lhs.difference(rhs)
-    if len(only_lhs) != 0:
-        is_are = 'is' if len(only_lhs) == 1 else 'are'
-        file_files = 'file' if len(only_lhs) == 1 else 'files'
-        s = ('(%s) %s missing %s %s' %
-                (', '.join(only_lhs), is_are, rhs_description, file_files)
-                )
-        raise Exception(s)
-
-
 def make_path(dir_path, name, suffix):
     return os.path.join(dir_path, ''.join([name, suffix]))
 

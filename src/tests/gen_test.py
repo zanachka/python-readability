@@ -4,6 +4,7 @@ test module.  It uses the current readability algorithm to capture a benchmark
 and construct a new test case.
 
 """
+import argparse
 import errno
 import os
 import os.path
@@ -38,12 +39,13 @@ def write_file(test_name, suffix, data):
     f.write(data)
     return True
 
-def gen_test(url, test_name, test_description):
-    spec_dict = {'url': url, 'test_description': test_description}
-    spec = yaml.dump(spec_dict, default_flow_style = False)
-    if not write_file(test_name, test.YAML_EXTENSION, spec):
-        return False
 
+def gen_test(url, test_name, test_description, gen_yaml = True):
+    if gen_yaml:
+        spec_dict = {'url': url, 'test_description': test_description}
+        spec = yaml.dump(spec_dict, default_flow_style = False)
+        if not write_file(test_name, test.YAML_EXTENSION, spec):
+            return False
     orig = urllib2.urlopen(url).read()
     if not write_file(test_name, test.ORIGINAL_SUFFIX, orig):
         return False
@@ -55,21 +57,40 @@ def gen_test(url, test_name, test_description):
 
     return True
 
-USAGE = '''
-usage: %s <url> <test name> <test description>
-'''
-
-def usage(prog_name):
-    print(USAGE % prog_name)
+DESCRIPTION = 'Create a readability regression test case.'
 
 def main():
-    if len(sys.argv) != 4:
-        usage(sys.argv[0])
-        return
-    url = sys.argv[1]
-    test_name = sys.argv[2]
-    test_description = sys.argv[3]
-    result = gen_test(url, test_name, test_description)
+    parser = argparse.ArgumentParser(description = DESCRIPTION)
+    parser.add_argument(
+            '--no-yaml',
+            dest = 'no_yaml',
+            action = 'store_const',
+            const = True,
+            default = False,
+            help = 'if set, no yaml file will be generated'
+            )
+    parser.add_argument(
+            'url',
+            metavar = 'url',
+            help = 'the url for which to generate a test'
+            )
+    parser.add_argument(
+            'test_name',
+            metavar = 'test-name',
+            help = 'the name of the test'
+            )
+    parser.add_argument(
+            'test_description',
+            metavar = 'test-description',
+            help = 'the description of the test'
+            )
+    args = parser.parse_args()
+    result = gen_test(
+            args.url,
+            args.test_name,
+            args.test_description,
+            gen_yaml = not args.no_yaml
+            )
     if not result:
         print('test was not fully generated')
 

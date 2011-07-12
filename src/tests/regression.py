@@ -1,3 +1,14 @@
+"""
+This module provides a regression test for results of running the readability
+algorithm on a variety of different real-world examples.  For each page in the
+test suite, a benchmark was captured that represents the current readability
+results.  Note that these are not necessarily ideal results, just the ones used
+as a benchmark.
+
+This allows you to tweak and change the readability algorithm and see how it
+changes existing results, hopefully for the better.
+
+"""
 import lxml.html
 import lxml.html.diff
 import os
@@ -25,11 +36,14 @@ TEST_SUMMARY_PATH = os.path.join(TEST_OUTPUT_PATH, 'index.html')
 
 class ReadabilityTest:
 
-    def __init__(self, dir_path, enabled, name, desc, orig_path, rdbl_path):
+    def __init__(
+            self, dir_path, enabled, name, desc, notes, orig_path, rdbl_path
+            ):
         self.dir_path = dir_path
         self.enabled = enabled
         self.name = name
         self.desc = desc
+        self.notes = notes
         self.orig_path = orig_path
         self.rdbl_path = rdbl_path
 
@@ -63,11 +77,16 @@ def make_readability_test(dir_path, name, spec_dict):
         enabled = spec_dict['enabled']
     else:
         enabled = True
+    if 'notes' in spec_dict:
+        notes = spec_dict['notes']
+    else:
+        notes = ''
     return ReadabilityTest(
             dir_path,
             enabled,
             name,
             spec_dict['test_description'],
+            notes,
             make_path(dir_path, name, ORIGINAL_SUFFIX),
             make_path(dir_path, name, READABLE_SUFFIX)
             )
@@ -99,8 +118,6 @@ def execute_test(test_data):
     else:
         doc = readability.Document(test_data.orig_html)
         summary = doc.summary()
-        benchmark_doc = (test_data.rdbl_html, 'benchmark')
-        result_doc = (summary.html, 'result')
         diff = lxml.html.diff.htmldiff(test_data.rdbl_html, summary.html)
         return ReadabilityTestResult(test_data, summary.html, diff)
 
@@ -139,12 +156,14 @@ class ResultSummary():
 
     def __init__(self, result):
         doc = lxml.html.fragment_fromstring(result.diff_html)
+
         insertions = doc.xpath('//ins')
         insertion_lengths = element_string_lengths(insertions)
-        deletions = doc.xpath('//del')
-        deletion_lengths = element_string_lengths(deletions)
         self.insertions = sum(insertion_lengths)
         self.insertion_blocks = len(insertions)
+
+        deletions = doc.xpath('//del')
+        deletion_lengths = element_string_lengths(deletions)
         self.deletions = sum(deletion_lengths)
         self.deletion_blocks = len(deletions)
         pass
@@ -169,7 +188,8 @@ def make_summary_row(test, result):
                     B.A('result', href = output(RESULT_SUFFIX)),
                     ' ',
                     B.A('diff', href = output(DIFF_SUFFIX))
-                    )
+                    ),
+                B.TD(test.notes)
                 )
     else:
         return B.TR(
@@ -177,7 +197,8 @@ def make_summary_row(test, result):
                 B.TD('%s (SKIPPED)' % test.name),
                 B.TD('N/A'),
                 B.TD('N/A'),
-                B.TD('N/A')
+                B.TD('N/A'),
+                B.TD(test.notes)
                 )
 
 
@@ -187,7 +208,8 @@ def make_summary_doc(tests_w_results):
                 B.TH('Test Name'),
                 B.TH('Inserted (in # of blocks)'),
                 B.TH('Deleted (in # of blocks)'),
-                B.TH('Links')
+                B.TH('Links'),
+                B.TH('Notes')
                 )
             )
     for (test, result) in tests_w_results:
@@ -253,7 +275,7 @@ del img {
 
 def add_css(doc):
     style = B.STYLE(CSS, type = 'text/css')
-    head = B.HEAD(style)
+    head = B.HEAD(style, content = 'text/html; charset=utf-8')
     doc.insert(0, head)
 
 

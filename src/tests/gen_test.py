@@ -1,3 +1,8 @@
+"""
+This program facilitates the creation of a regression test case as used by the
+test module.  It uses the current readability algorithm to capture a benchmark
+and construct a new test case.
+"""
 import errno
 import os
 import os.path

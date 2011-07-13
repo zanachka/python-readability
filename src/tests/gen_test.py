@@ -40,57 +40,109 @@ def write_file(test_name, suffix, data):
     return True
 
 
-def gen_test(url, test_name, test_description, gen_yaml = True):
-    if gen_yaml:
-        spec_dict = {'url': url, 'test_description': test_description}
-        spec = yaml.dump(spec_dict, default_flow_style = False)
-        if not write_file(test_name, test.YAML_EXTENSION, spec):
-            return False
+def write_original(test_name, url):
     orig = urllib2.urlopen(url).read()
-    if not write_file(test_name, test.ORIGINAL_SUFFIX, orig):
-        return False
+    return write_file(test_name, test.ORIGINAL_SUFFIX, orig)
 
+def write_readable(test_name, orig):
     rdbl_doc = readability.Document(orig)
     summary = rdbl_doc.summary()
-    if not write_file(test_name, test.READABLE_SUFFIX, summary.html):
-        return False
+    return write_file(test_name, test.READABLE_SUFFIX, summary.html)
 
+def read_spec(test_name):
+    yaml_path = os.path.join(
+            test.TEST_DATA_PATH,
+            test_name + test.YAML_EXTENSION
+            )
+    return test.read_yaml(yaml_path)
+
+def read_orig(test_name, url = None):
+    if url:
+        orig = urllib2.urlopen(url).read()
+        write_result = write_file(test_name, test.ORIGINAL_SUFFIX, orig)
+        return orig, write_result
+    else:
+        orig_path = os.path.join(
+                test.TEST_DATA_PATH,
+                test_name + test.ORIGINAL_SUFFIX
+                )
+        orig = open(orig_path).read()
+        return orig, True
+
+def create(args):
+    spec_dict = {'url': args.url, 'test_description': args.test_description}
+    spec = yaml.dump(spec_dict, default_flow_style = False)
+    if not write_file(args.test_name, test.YAML_EXTENSION, spec):
+        return False
+    if not write_original(args.test_name, args.url):
+        return False
+    if not write_readable(args.test_name, args.url):
+        return False
+    return True
+
+def genbench(args):
+    if args.refetch:
+        spec_dict = read_spec(args.test_name)
+        url = spec_dict['url']
+    else:
+        url = None
+    orig, success = read_orig(args.test_name, url)
+    if not success:
+        return False
+    rdbl_doc = readability.Document(orig)
+    summary = rdbl_doc.summary()
+    if not write_file(args.test_name, test.READABLE_SUFFIX, summary.html):
+        return False
     return True
 
 DESCRIPTION = 'Create a readability regression test case.'
 
 def main():
     parser = argparse.ArgumentParser(description = DESCRIPTION)
-    parser.add_argument(
-            '--no-yaml',
-            dest = 'no_yaml',
-            action = 'store_const',
-            const = True,
-            default = False,
-            help = 'if set, no yaml file will be generated'
+    subparsers = parser.add_subparsers(help = 'available subcommands')
+
+    parser_create = subparsers.add_parser(
+            'create',
+            help = 'create an entirely new test'
             )
-    parser.add_argument(
+    parser_create.add_argument(
             'url',
             metavar = 'url',
             help = 'the url for which to generate a test'
             )
-    parser.add_argument(
+    parser_create.add_argument(
             'test_name',
             metavar = 'test-name',
             help = 'the name of the test'
             )
-    parser.add_argument(
+    parser_create.add_argument(
             'test_description',
             metavar = 'test-description',
             help = 'the description of the test'
             )
-    args = parser.parse_args()
-    result = gen_test(
-            args.url,
-            args.test_name,
-            args.test_description,
-            gen_yaml = not args.no_yaml
+    parser_create.set_defaults(func = create)
+
+    parser_genbench = subparsers.add_parser(
+            'genbench',
+            help = 'regenerate the benchmark for an existing test'
             )
+    parser_genbench.add_argument(
+            'test_name',
+            metavar = 'test-name',
+            help = 'the name of the test'
+            )
+    parser_genbench.add_argument(
+            '--refetch',
+            dest = 'refetch',
+            action = 'store_const',
+            const = True,
+            default = False,
+            help = 'if set, original html is refetched from the url'
+            )
+    parser_genbench.set_defaults(func = genbench)
+
+    args = parser.parse_args()
+    result = args.func(args)
     if not result:
         print('test was not fully generated')
 

@@ -57,6 +57,12 @@ def read_spec(test_name):
     return test.read_yaml(yaml_path)
 
 def read_orig(test_name, url = None):
+    """
+    Reads the original HTML for a given test.  If a url is provided, the HTML
+    is fetched from it.  Otherwise, we look for an existing local copy.  This
+    returns a pair: (HTML string, True iff the HTML has been or is already
+    stored in a local copy).
+    """
     if url:
         orig = urllib2.urlopen(url).read()
         write_result = write_file(test_name, test.ORIGINAL_SUFFIX, orig)

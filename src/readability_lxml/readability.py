@@ -2,6 +2,7 @@
 import logging
 import re
 import sys
+import urlparse
 
 from collections import defaultdict
 from collections import namedtuple
@@ -93,7 +94,93 @@ def text_length(i):
     return len(clean(i.text_content() or ""))
 
 
+def clean_segment_extension(num_segments, index, segment):
+    if segment.find('.') == -1:
+        return segment
+    else:
+        split_segment = segment.split('.')
+        possible_type = split_segment[1]
+        has_non_alpha = re.search(r'[^a-zA-Z]', possible_type)
+        if has_non_alpha:
+            return segment
+        else:
+            return split_segment[0]
 
+
+def clean_segment_ewcms(num_segments, index, segment):
+    """
+    EW-CMS specific segment cleaning.  Quoth the original source:
+        "EW-CMS specific segment replacement. Ugly.
+         Example: http://www.ew.com/ew/article/0,,20313460_20369436,00.html"
+    """
+    return segment.replace(',00', '')
+
+
+def clean_segment_page_number(num_segments, index, segment):
+    # If our first or second segment has anything looking like a page number,
+    # remove it.
+    if index >= (num_segments - 2):
+        pattern = r'((_|-)?p[a-z]*|(_|-))[0-9]{1,2}$'
+        cleaned = re.sub(pattern, '', segment, re.IGNORECASE)
+        if cleaned == '':
+            return None
+        else:
+            return cleaned
+    else:
+        return segment
+
+
+def clean_segment_number(num_segments, index, segment):
+    # If this is purely a number, and it's the first or second segment, it's
+    # probably a page number.  Remove it.
+    if index >= (num_segments - 2) and re.search(r'^\d{1,2}$', segment):
+        return None
+    else:
+        return segment
+
+
+def clean_segment(num_segments, index, segment):
+    """
+    Cleans a single segment of a URL to find the base URL.  The base URL is as
+    a reference when evaluating URLs that might be next-page links.  Returns a
+    cleaned segment string or None, if the segment should be omitted entirely
+    from the base URL.
+    """
+    funcs = [
+            clean_segment_extension,
+            clean_segment_ewcms,
+            clean_segment_page_number,
+            clean_segment_number
+            ]
+    cleaned_segment = segment
+    for func in funcs:
+        if cleaned_segment is None:
+            break
+        cleaned_segment = func(num_segments, index, cleaned_segment)
+    return cleaned_segment
+
+
+def filter_none(seq):
+    return [x for x in seq if x is not None]
+
+
+def clean_segments(segments):
+    cleaned = [
+            clean_segment(len(segments), i, s)
+            for i, s in enumerate(segments)
+            ]
+    return filter_none(cleaned)
+
+
+def find_base_url(url):
+    if url is None:
+        return None
+    parts = urlparse.urlsplit(url)
+    segments = parts.path.split('/')
+    cleaned_segments = clean_segments(segments)
+    new_path = '/'.join(cleaned_segments)
+    new_parts = (parts.scheme, parts.netloc, new_path, '', '')
+    return urlparse.urlunsplit(new_parts)
 
 
 class Document:
@@ -254,9 +341,21 @@ class Document:
                 append = True
             sibling_key = sibling  # HashableElement(sibling)
             if sibling_key in candidates:
+                # Print out sibling information for debugging.
+                sibling_candidate = candidates[sibling_key]
+                self.debug(
+                        "Sibling: %6.3f %s" %
+                        (sibling_candidate['content_score'], describe(sibling))
+                        )
+
                 sib_threshhold = sibling_score_threshold
                 if candidates[sibling_key]['content_score'] >= sib_threshhold:
                     append = True
+            else:
+                self.debug("Sibling: %s" % describe(sibling))
+
+            if sibling_key in candidates and candidates[sibling_key]['content_score'] >= sibling_score_threshold:
+                append = True
 
             if sibling.tag == "p":
                 link_density = self.get_link_density(sibling)
@@ -314,6 +413,7 @@ class Document:
         candidates = {}
         ordered = []
         for elem in self.tags(self.html, "p", "pre", "td"):
+            self.debug('Scoring %s' % describe(elem))
             parent_node = elem.getparent()
             if parent_node is None:
                 continue
@@ -418,15 +518,9 @@ class Document:
 
     def transform_misused_divs_into_paragraphs(self):
         for elem in self.tags(self.html, 'div'):
-            # transform <div>s that do not contain other block elements into
-            # <p>s
-            #FIXME: The current implementation ignores all descendants that
-            # are not direct children of elem
-            # This results in incorrect results in case there is an <img>
-            # buried within an <a> for example
-            if not REGEXES['divToPElementsRe'].search(
-                    unicode(''.join(map(tostring, list(elem))))):
-                #self.debug("Altering %s to p" % (describe(elem)))
+            # transform <div>s that do not contain other block elements into <p>s
+            if not REGEXES['divToPElementsRe'].search(unicode(''.join(map(tostring, list(elem))))):
+                self.debug("Altering %s to p" % (describe(elem)))
                 elem.tag = "p"
                 #print "Fixed element "+describe(elem)
 
@@ -436,6 +530,7 @@ class Document:
                 p.text = elem.text
                 elem.text = None
                 elem.insert(0, p)
+                self.debug("Appended %s to %s" % (tounicode(p), describe(elem)))
                 #print "Appended "+tounicode(p)+" to "+describe(elem)
 
             for pos, child in reversed(list(enumerate(elem))):
@@ -444,10 +539,15 @@ class Document:
                     p.text = child.tail
                     child.tail = None
                     elem.insert(pos + 1, p)
+                    self.debug("Inserted %s to %s" % (tounicode(p), describe(elem)))
                     #print "Inserted "+tounicode(p)+" to "+describe(elem)
                 if child.tag == 'br':
                     #print 'Dropped <br> at '+describe(elem)
                     child.drop_tree()
+
+    def findNextPageLink(self, elem):
+        allLinks = self.tags(elem, ['a'])
+        baseUrl = self.find_base_url(self.options['url'])
 
     def tags(self, node, *tag_names):
         for tag_name in tag_names:

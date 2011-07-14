@@ -139,6 +139,13 @@ def clean_segment_number(num_segments, index, segment):
         return segment
 
 
+def clean_segment_index(num_segments, index, segment):
+    if index == (num_segments - 1) and segment.lower() == 'index':
+        return None
+    else:
+        return segment
+
+
 def clean_segment(num_segments, index, segment):
     """
     Cleans a single segment of a URL to find the base URL.  The base URL is as
@@ -150,7 +157,8 @@ def clean_segment(num_segments, index, segment):
             clean_segment_extension,
             clean_segment_ewcms,
             clean_segment_page_number,
-            clean_segment_number
+            clean_segment_number,
+            clean_segment_index
             ]
     cleaned_segment = segment
     for func in funcs:

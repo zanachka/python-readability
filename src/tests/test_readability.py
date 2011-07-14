@@ -110,3 +110,17 @@ class TestFindBaseUrl(unittest.TestCase):
                 ]
         self._run_urls(specs)
 
+    def test_index(self):
+        specs = [
+                (
+                'http://foo.com/index.html',
+                'http://foo.com',
+                'index should be stripped'
+                ),
+                (
+                'http://foo.com/path/to/index.html',
+                'http://foo.com/path/to',
+                'index should be stripped'
+                )
+                ]
+        self._run_urls(specs)

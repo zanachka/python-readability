@@ -1,5 +1,6 @@
 import unittest
 
+from helpers import load_regression_data
 from readability_lxml.readability import Document
 from readability_lxml import readability as r
 
@@ -139,3 +140,18 @@ class TestFindBaseUrl(unittest.TestCase):
                 )
                 ]
         self._run_urls(specs)
+
+
+class TestFindNextPageLink(unittest.TestCase):
+
+    def test_nytimes(self):
+        # This better work for the New York Times.
+        html = load_regression_data('nytimes-next-page.html')
+        expected = '/2011/07/10/magazine/the-dark-art-of-breaking-bad.html?pagewanted=2&_r=1'
+
+        doc = r.document_fromstring(html)
+        url = 'http://www.nytimes.com/2011/07/10/magazine/the-dark-art-of-breaking-bad.html'
+        parsed_urls = {url}
+        actual = r.find_next_page_link(parsed_urls, url, doc)
+        logging.debug('next page link: ' + str(actual))
+

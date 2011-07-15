@@ -1,0 +1,9 @@
+test_description: multi-page article from nytimes
+enabled: false
+notes: multi-page not yet implemented
+url: http://www.nytimes.com/2011/07/10/magazine/the-dark-art-of-breaking-bad.html
+url_map:
+    http://www.nytimes.com/2011/07/10/magazine/the-dark-art-of-breaking-bad.html?pagewanted=2: nytimes-000-orig-2.html
+    http://www.nytimes.com/2011/07/10/magazine/the-dark-art-of-breaking-bad.html?pagewanted=3: nytimes-000-orig-3.html
+    http://www.nytimes.com/2011/07/10/magazine/the-dark-art-of-breaking-bad.html?pagewanted=4: nytimes-000-orig-4.html
+    http://www.nytimes.com/2011/07/10/magazine/the-dark-art-of-breaking-bad.html?pagewanted=5: nytimes-000-orig-5.html

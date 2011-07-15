@@ -2,20 +2,13 @@
 import os
 import unittest
 
+from helpers import load_sample
 from readability_lxml.readability import Document
-
-
-SAMPLES = os.path.join(os.path.dirname(__file__), 'samples')
 
 sample_list = [
     'nyt.sample.html',
     'si-game.sample.html',
 ]
-
-
-def load_sample(filename):
-    """Helper to get the content out of the sample files"""
-    return open(os.path.join(SAMPLES, filename)).read()
 
 
 def test_processes():

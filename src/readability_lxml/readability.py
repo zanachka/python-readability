@@ -300,8 +300,41 @@ def eval_possible_next_page_link(
     if REGEXES['prevLink'].search(link_data):
         candidate.score -= 200
 
-    # TODO: Score ancestry.
-    # TODO: Score a bunch of other stuff.
+    parent = link.getparent()
+    positive_node_match = False
+    negative_node_match = False
+    while parent is not None:
+        parent_class = parent.get('class') or ''
+        parent_id = parent.get('id') or ''
+        parent_class_and_id = ' '.join([parent_class, parent_id])
+        if not positive_node_match:
+            if REGEXES['page'].search(parent_class_and_id):
+                positive_node_match = True
+                candidate.score += 25
+        if not negative_node_match:
+            if REGEXES['negativeRe'].search(parent_class_and_id):
+                if not REGEXES['positiveRe'].search(parent_class_and_id):
+                    negative_node_match = True
+                    candidate.score -= 25
+        parent = parent.getparent()
+
+    if REGEXES['page'].search(href):
+        candidate.score += 25
+
+    if REGEXES['extraneous'].search(href):
+        candidate.score -= 15
+
+    try:
+        link_text_as_int = int(link_text)
+
+        # Punish 1 since we're either already there, or it's probably before
+        # what we want anyways.
+        if link_text_as_int == 1:
+            candidate.score -= 10
+        else:
+            candidate.score += max(0, 10 - link_text_as_int)
+    except ValueError as e:
+        pass
 
 def find_next_page_link(parsed_urls, url, elem):
     links = tags(elem, 'a')

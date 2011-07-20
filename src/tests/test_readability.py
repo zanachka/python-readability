@@ -3,6 +3,7 @@ import unittest
 from helpers import load_regression_data
 from readability_lxml.readability import Document
 from readability_lxml import readability as r
+from readability_lxml import urlfetch
 
 
 class TestReadabilityDocument(unittest.TestCase):
@@ -144,14 +145,49 @@ class TestFindBaseUrl(unittest.TestCase):
 
 class TestFindNextPageLink(unittest.TestCase):
 
-    def test_nytimes(self):
-        # This better work for the New York Times.
-        html = load_regression_data('nytimes-next-page.html')
-        expected = '/2011/07/10/magazine/the-dark-art-of-breaking-bad.html?pagewanted=2&_r=1'
-
-        doc = r.document_fromstring(html)
-        url = 'http://www.nytimes.com/2011/07/10/magazine/the-dark-art-of-breaking-bad.html'
+    def _test_page(self, url, html_path, expected):
+        html = load_regression_data(html_path)
+        doc = r.parse(html, url)
         parsed_urls = {url}
         actual = r.find_next_page_link(parsed_urls, url, doc)
-        logging.debug('next page link: ' + str(actual))
+        self.assertEqual(expected, actual)
 
+    def test_basic(self):
+        self._test_page(
+                'http://basic.com/article.html',
+                'basic-multi-page.html',
+                'http://basic.com/article.html?pagewanted=2'
+                )
+
+    def test_nytimes(self):
+        # This better work for the New York Times.
+        self._test_page(
+                'http://www.nytimes.com/2011/07/10/magazine/the-dark-art-of-breaking-bad.html',
+                'nytimes-next-page.html',
+                'http://www.nytimes.com/2011/07/10/magazine/the-dark-art-of-breaking-bad.html?pagewanted=2&_r=1'
+                )
+
+
+class TestMultiPage(unittest.TestCase):
+    """
+    Tests the full path of generating a readable page for a multi-page article.
+    The test article is very simple, so this test should be resilient to tweaks
+    of the algorithm.
+    """
+
+    def _make_basic_urldict(self):
+        url_fmt = 'http://basic.com/article.html?pagewanted=%s'
+        file_fmt = 'basic-multi-page-%s.html'
+        pairs = [(url_fmt % i, file_fmt % i) for i in ['2', '3']]
+        return dict(pairs)
+
+    def test_basic(self):
+        html = load_regression_data('basic-multi-page.html')
+        urldict = self._make_basic_urldict()
+        fetcher = urlfetch.MockUrlFetch(urldict)
+        options = {
+                'url': 'http://basic.com/article.html',
+                'urlfetch': fetcher
+                }
+        doc = Document(html, **options)
+        doc.summary()

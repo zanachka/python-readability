@@ -9,6 +9,7 @@ This allows you to tweak and change the readability algorithm and see how it
 changes existing results, hopefully for the better.
 
 """
+import logging
 import lxml.html
 import lxml.html.diff
 import os
@@ -20,6 +21,7 @@ import yaml
 
 from lxml.html import builder as B
 from readability_lxml import readability
+from readability_lxml import urlfetch
 
 
 DIFF_SUFFIX = '-diff.html'
@@ -100,13 +102,24 @@ del img {
 class ReadabilityTest:
 
     def __init__(
-            self, dir_path, enabled, name, desc, notes, orig_path, rdbl_path
+            self,
+            dir_path,
+            enabled,
+            name,
+            url,
+            desc,
+            notes,
+            url_map,
+            orig_path,
+            rdbl_path
             ):
         self.dir_path = dir_path
         self.enabled = enabled
         self.name = name
+        self.url = url
         self.desc = desc
         self.notes = notes
+        self.url_map = url_map
         self.orig_path = orig_path
         self.rdbl_path = rdbl_path
 
@@ -137,20 +150,17 @@ def make_path(dir_path, name, suffix):
 
 
 def make_readability_test(dir_path, name, spec_dict):
-    if 'enabled' in spec_dict:
-        enabled = spec_dict['enabled']
-    else:
-        enabled = True
-    if 'notes' in spec_dict:
-        notes = spec_dict['notes']
-    else:
-        notes = ''
+    enabled = spec_dict.get('enabled', True)
+    notes = spec_dict.get('notes', '')
+    url_map = spec_dict.get('url_map', dict())
     return ReadabilityTest(
             dir_path,
             enabled,
             name,
+            spec_dict['url'],
             spec_dict['test_description'],
             notes,
+            url_map,
             make_path(dir_path, name, ORIGINAL_SUFFIX),
             make_path(dir_path, name, READABLE_SUFFIX)
             )
@@ -180,7 +190,13 @@ def execute_test(test_data):
     if test_data is None:
         return None
     else:
-        doc = readability.Document(test_data.orig_html)
+        url = test_data.test.url
+        fetcher = urlfetch.MockUrlFetch(test_data.test.url_map)
+        doc = readability.Document(
+                test_data.orig_html,
+                url=url,
+                urlfetch=fetcher
+                )
         summary = doc.summary_with_metadata()
         diff = lxml.html.diff.htmldiff(test_data.rdbl_html, summary.html)
         return ReadabilityTestResult(test_data, summary.html, diff)
@@ -193,6 +209,7 @@ def element_string_lengths(elems):
 class ResultSummary():
 
     def __init__(self, result):
+        # logging.debug('diff: %s' % result.diff_html)
         doc = lxml.html.fragment_fromstring(result.diff_html)
 
         insertions = doc.xpath('//ins')
@@ -319,6 +336,7 @@ def run_readability_tests():
     write_summary(TEST_SUMMARY_PATH, zip(tests, results))
 
 def main():
+    logging.basicConfig(level = logging.DEBUG)
     if len(sys.argv) > 1 and sys.argv[1] == 'unittest':
         del sys.argv[1]
         return unittest.main()

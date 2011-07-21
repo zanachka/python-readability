@@ -13,6 +13,8 @@ from lxml.html import document_fromstring
 from lxml.html import fragment_fromstring
 
 from cleaners import clean_attributes
+
+
 from cleaners import html_cleaner
 from htmls import build_doc
 from htmls import get_body
@@ -150,7 +152,7 @@ def transform_misused_divs_into_paragraphs(doc):
         # transform <div>s that do not contain other block elements into <p>s
         if not REGEXES['divToPElementsRe'].search(
             unicode(''.join(map(tostring, list(elem))))):
-            logging.debug("Altering %s to p" % (describe(elem)))
+            # log.debug("Altering %s to p" % (describe(elem)))
             elem.tag = "p"
             #print "Fixed element "+describe(elem)
 
@@ -160,7 +162,7 @@ def transform_misused_divs_into_paragraphs(doc):
             p.text = elem.text
             elem.text = None
             elem.insert(0, p)
-            logging.debug("Appended %s to %s" % (tounicode(p), describe(elem)))
+            # log.debug("Appended %s to %s" % (tounicode(p), describe(elem)))
             #print "Appended "+tounicode(p)+" to "+describe(elem)
 
         for pos, child in reversed(list(enumerate(elem))):
@@ -169,9 +171,9 @@ def transform_misused_divs_into_paragraphs(doc):
                 p.text = child.tail
                 child.tail = None
                 elem.insert(pos + 1, p)
-                logging.debug("Inserted %s to %s" % (
-                    tounicode(p),
-                    describe(elem)))
+                # log.debug("Inserted %s to %s" % (
+                    # tounicode(p),
+                    # describe(elem)))
                 #print "Inserted "+tounicode(p)+" to "+describe(elem)
             if child.tag == 'br':
                 #print 'Dropped <br> at '+describe(elem)
@@ -181,13 +183,13 @@ def transform_misused_divs_into_paragraphs(doc):
 def remove_unlikely_candidates(doc):
     for elem in doc.iter():
         s = "%s %s" % (elem.get('class', ''), elem.get('id', ''))
-        #logging.debug(s)
+        #log.debug(s)
         if (REGEXES['unlikelyCandidatesRe'].search(s) and
                 (not REGEXES['okMaybeItsACandidateRe'].search(s)) and
                 elem.tag != 'body' and
                 elem.getparent() is not None
                 ):
-            logging.debug("Removing unlikely candidate - %s" % describe(elem))
+            # log.debug("Removing unlikely candidate - %s" % describe(elem))
             elem.drop_tree()
 
 
@@ -200,14 +202,13 @@ def get_link_density(elem):
     total_length = text_length(elem)
     return float(link_length) / max(total_length, 1)
 
-
-def score_paragraphs(doc, min_text_len):
+def score_paragraphs(doc, options):
     candidates = {}
-    #logging.debug(str([describe(node) for node in tags(doc, "div")]))
+    #log.debug(str([describe(node) for node in tags(doc, "div")]))
 
     ordered = []
     for elem in tags(doc, "p", "pre", "td"):
-        logging.debug('Scoring %s' % describe(elem))
+        # log.debug('Scoring %s' % describe(elem))
         parent_node = elem.getparent()
         if parent_node is None:
             continue
@@ -217,7 +218,7 @@ def score_paragraphs(doc, min_text_len):
         inner_text_len = len(inner_text)
 
         # If this paragraph is less than 25 characters, don't even count it.
-        if inner_text_len < min_text_len:
+        if inner_text_len < options['min_text_length']:
             continue
 
         if parent_node not in candidates:
@@ -246,11 +247,11 @@ def score_paragraphs(doc, min_text_len):
         candidate = candidates[elem]
         ld = get_link_density(elem)
         score = candidate['content_score']
-        logging.debug("Candid: %6.3f %s link density %.3f -> %6.3f" % (
-            score,
-            describe(elem),
-            ld,
-            score * (1 - ld)))
+        # log.debug("Candid: %6.3f %s link density %.3f -> %6.3f" % (
+            # score,
+            # describe(elem),
+            # ld,
+            # score * (1 - ld)))
         candidate['content_score'] *= (1 - ld)
 
     return candidates
@@ -280,7 +281,7 @@ def reverse_tags(node, *tag_names):
             yield e
 
 
-def sanitize(node, candidates, min_text_len):
+def sanitize(node, candidates, options):
     for header in tags(node, "h1", "h2", "h3", "h4", "h5", "h6"):
         if class_weight(header) < 0 or get_link_density(header) > 0.33:
             header.drop_tree()
@@ -301,8 +302,8 @@ def sanitize(node, candidates, min_text_len):
         tag = el.tag
 
         if weight + content_score < 0:
-            logging.debug("Cleaned %s with score %6.3f and weight %-3s" %
-                (describe(el), content_score, weight, ))
+            # log.debug("Cleaned %s with score %6.3f and weight %-3s" %
+                # (describe(el), content_score, weight, ))
             el.drop_tree()
         elif el.text_content().count(",") < 10:
             counts = {}
@@ -339,7 +340,7 @@ def sanitize(node, candidates, min_text_len):
             elif counts["input"] > (counts["p"] / 3):
                 reason = "less than 3x <p>s than <input>s"
                 to_remove = True
-            elif content_length < (min_text_len) and (counts["img"] == 0 or counts["img"] > 2):
+            elif content_length < options['min_text_length'] and (counts["img"] == 0 or counts["img"] > 2):
                 reason = "too short content length %s without a single image" % content_length
                 to_remove = True
             elif weight < 25 and link_density > 0.2:
@@ -365,7 +366,7 @@ def sanitize(node, candidates, min_text_len):
                 x = 1
                 siblings = []
                 for sib in el.itersiblings():
-                    #logging.debug(sib.text_content())
+                    #log.debug(sib.text_content())
                     sib_content_length = text_length(sib)
                     if sib_content_length:
                         i += 1
@@ -373,25 +374,25 @@ def sanitize(node, candidates, min_text_len):
                         if i == x:
                             break
                 for sib in el.itersiblings(preceding=True):
-                    #logging.debug(sib.text_content())
+                    #log.debug(sib.text_content())
                     sib_content_length = text_length(sib)
                     if sib_content_length:
                         j += 1
                         siblings.append(sib_content_length)
                         if j == x:
                             break
-                #logging.debug(str(siblings))
+                #log.debug(str(siblings))
                 if siblings and sum(siblings) > 1000:
                     to_remove = False
-                    logging.debug("Allowing %s" % describe(el))
+                    log.debug("Allowing %s" % describe(el))
                     for desnode in tags(el, "table", "ul", "div"):
                         allowed[desnode] = True
 
             if to_remove:
-                logging.debug("Cleaned %6.3f %s with weight %s cause it has %s." %
-                    (content_score, describe(el), weight, reason))
+                # log.debug("Cleaned %6.3f %s with weight %s cause it has %s." %
+                    # (content_score, describe(el), weight, reason))
                 #print tounicode(el)
-                #logging.debug("pname %s pweight %.3f" %(pname, pweight))
+                #log.debug("pname %s pweight %.3f" %(pname, pweight))
                 el.drop_tree()
 
     # for el in ([node] + [n for n in node.iter()]):
@@ -412,49 +413,52 @@ def get_raw_article(candidates, best_candidate, enclose_with_html_tag=True):
     else:
         output = fragment_fromstring('<div/>')
     best_elem = best_candidate['elem']
-    for sibling in best_elem.getparent().getchildren():
-        #if isinstance(sibling, NavigableString): continue#in lxml there no
-        # concept of simple text
-        append = False
-        if sibling is best_elem:
-            append = True
-        sibling_key = sibling  # HashableElement(sibling)
-
-        # Print out sibling information for debugging.
-        if sibling_key in candidates:
-            sibling_candidate = candidates[sibling_key]
-            logging.debug(
-                    "Sibling: %6.3f %s" %
-                    (sibling_candidate['content_score'], describe(sibling))
-                    )
-        else:
-            logging.debug("Sibling: %s" % describe(sibling))
-
-        if sibling_key in candidates and candidates[sibling_key]['content_score'] >= sibling_score_threshold:
-            append = True
-
-        if sibling.tag == "p":
-            link_density = get_link_density(sibling)
-            node_content = sibling.text or ""
-            node_length = len(node_content)
-
-            if node_length > 80 and link_density < 0.25:
+    if best_elem.getparent() is not None:
+        for sibling in best_elem.getparent().getchildren():
+            #if isinstance(sibling, NavigableString): continue#in lxml there no
+            # concept of simple text
+            append = False
+            if sibling is best_elem:
                 append = True
-            elif node_length < 80 and link_density == 0 and re.search('\.( |$)', node_content):
-                append = True
+            sibling_key = sibling  # HashableElement(sibling)
 
-        if append:
-            # We don't want to append directly to output, but the div
-            # in html->body->div
-            if enclose_with_html_tag:
-                output.getchildren()[0].getchildren()[0].append(sibling)
+            # Print out sibling information for debugging.
+            if sibling_key in candidates:
+                sibling_candidate = candidates[sibling_key]
+                log.debug(
+                        "Sibling: %6.3f %s" %
+                        (sibling_candidate['content_score'], describe(sibling))
+                        )
             else:
-                output.append(sibling)
+                log.debug("Sibling: %s" % describe(sibling))
 
+            if sibling_key in candidates and candidates[sibling_key]['content_score'] >= sibling_score_threshold:
+                append = True
+
+            if sibling.tag == "p":
+                link_density = get_link_density(sibling)
+                node_content = sibling.text or ""
+                node_length = len(node_content)
+
+                if node_length > 80 and link_density < 0.25:
+                    append = True
+                elif node_length < 80 and link_density == 0 and re.search('\.( |$)', node_content):
+                    append = True
+
+            if append:
+                # We don't want to append directly to output, but the div
+                # in html->body->div
+                if enclose_with_html_tag:
+                    output.getchildren()[0].getchildren()[0].append(sibling)
+                else:
+                    output.append(sibling)
+
+    else:
+        output = best_elem
     return output
 
 
-def get_article(doc, min_text_len, retry_len, enclose_with_html_tag=True):
+def get_article(doc, options, enclose_with_html_tag=True):
     try:
         ruthless = True
         while True:
@@ -465,8 +469,7 @@ def get_article(doc, min_text_len, retry_len, enclose_with_html_tag=True):
             if ruthless:
                 remove_unlikely_candidates(doc)
             transform_misused_divs_into_paragraphs(doc)
-            candidates = score_paragraphs(doc, min_text_len)
-
+            candidates = score_paragraphs(doc, options)
             best_candidate = select_best_candidate(candidates)
             if best_candidate:
                 confidence = best_candidate['content_score']
@@ -474,22 +477,18 @@ def get_article(doc, min_text_len, retry_len, enclose_with_html_tag=True):
                         enclose_with_html_tag=enclose_with_html_tag)
             else:
                 if ruthless:
-                    logging.debug("ruthless removal did not work. ")
+                    log.debug("ruthless removal did not work. ")
                     ruthless = False
-                    logging.debug("ended up stripping too much - going for a safer parse")
+                    log.debug("ended up stripping too much - going for a safer parse")
                     # try again
                     continue
                 else:
-                    logging.debug("Ruthless and lenient parsing did not work. Returning raw html")
-                    return Summary(0, None, '', '')
+                    log.debug("Ruthless and lenient parsing did not work. Returning raw html")
+                    return Summary(None, 0, '', '')
 
-            cleaned_article = sanitize(
-                    article,
-                    candidates,
-                    min_text_len
-                    )
+            cleaned_article = sanitize(article, candidates, options)
 
-            of_acceptable_length = len(cleaned_article or '') >= retry_len
+            of_acceptable_length = len(cleaned_article or '') >= options['retry_length']
             if ruthless and not of_acceptable_length:
                 ruthless = False
                 continue  # try again
@@ -500,7 +499,7 @@ def get_article(doc, min_text_len, retry_len, enclose_with_html_tag=True):
                     title=get_title(doc))
 
     except StandardError as e:
-        logging.exception('error getting summary: ')
+        log.exception('error getting summary: ')
         raise Unparseable(str(e)), None, sys.exc_info()[2]
 
 
@@ -615,10 +614,13 @@ def find_base_url(url):
     cleaned_segments = clean_segments(segments)
     new_path = '/'.join(cleaned_segments)
     new_parts = (parts.scheme, parts.netloc, new_path, '', '')
-    return urlparse.urlunsplit(new_parts)
+    base_url = urlparse.urlunsplit(new_parts)
+    log.debug('url: %s' % url)
+    log.debug('base_url: %s' % base_url)
+    return base_url
 
 
-class CandidatePage():
+class NextPageCandidate():
     '''
     An object that tracks a single href that is a candidate for the location of
     the next page.  Note that this is distinct from the candidates used when
@@ -650,7 +652,7 @@ def eval_href(parsed_urls, url, base_url, link):
         return None, None, False
 
     href = strip_trailing_slash(raw_href)
-    logging.debug('evaluating next page link: %s' % href)
+    # log.debug('evaluating next page link: %s' % href)
 
     # If we've already seen this page, ignore it.
     if href == base_url or href == url or href in parsed_urls:
@@ -658,7 +660,7 @@ def eval_href(parsed_urls, url, base_url, link):
 
     # If it's on a different domain, skip it.
     if url is not None and not same_domain(url, href):
-        logging.debug('rejecting %s: different domain' % href)
+        # log.debug('rejecting %s: different domain' % href)
         return raw_href, href, False
 
     return raw_href, href, True
@@ -672,7 +674,7 @@ def eval_link_text(link):
         return link_text, True
 
 
-def find_or_create_page(candidates, href, link_text):
+def find_or_create_page_candidate(candidates, href, link_text):
     '''
     Finds or creates a candidate page object for a next-page href.  If one
     exists already, which happens if there are multiple links with the same
@@ -683,14 +685,12 @@ def find_or_create_page(candidates, href, link_text):
     if href in candidates:
         return candidates[href], False
     else:
-        candidate = CandidatePage(link_text, href)
+        candidate = NextPageCandidate(link_text, href)
         candidates[href] = candidate
         return candidate, True
 
 
-def eval_possible_next_page_link(
-            parsed_urls, url, base_url, candidates, link):
-
+def eval_possible_next_page_link(parsed_urls, url, base_url, candidates, link):
     raw_href, href, ok = eval_href(parsed_urls, url, base_url, link)
     if not ok:
         return
@@ -706,21 +706,31 @@ def eval_possible_next_page_link(
         if not re.search(r'\d', href_leftover):
             return
 
-    candidate, created = find_or_create_page(candidates, href, link_text)
+    candidate, created = find_or_create_page_candidate(
+            candidates,
+            href,
+            link_text
+            )
+
     if not created:
         candidate.link_text += ' | ' + link_text
 
     link_class_name = link.get('class') or ''
     link_id = link.get('id') or ''
     link_data = ' '.join([link_text, link_class_name, link_id])
+    # log.debug('link: %s' % tostring(link))
+    log.debug('link_data: %s' % link_data)
 
     if base_url is not None and href.find(base_url) != 0:
+        log.debug('no base_url')
         candidate.score -= 25
 
     if REGEXES['nextLink'].search(link_data):
+        log.debug('link_data nextLink regex match')
         candidate.score += 50
 
     if REGEXES['page'].search(link_data):
+        log.debug('link_data page regex match')
         candidate.score += 25
 
     if REGEXES['firstLast'].search(link_data):
@@ -754,6 +764,7 @@ def eval_possible_next_page_link(
         parent = parent.getparent()
 
     if REGEXES['page'].search(href):
+        log.debug('href regex match')
         candidate.score += 25
 
     if REGEXES['extraneous'].search(href):
@@ -768,16 +779,15 @@ def eval_possible_next_page_link(
             candidate.score -= 10
         else:
             candidate.score += max(0, 10 - link_text_as_int)
-    except ValueError as e:
+    except ValueError as exc:
         pass
 
-
-def find_next_page_link(parsed_urls, url, elem):
+def find_next_page_url(parsed_urls, url, elem):
     links = tags(elem, 'a')
     base_url = find_base_url(url)
-    # candidates is a mapping from URLs to CandidatePage objects that represent
-    # information used to determine if a URL points to the next page in the
-    # article.
+    # candidates is a mapping from URLs to NextPageCandidate objects that
+    # represent information used to determine if a URL points to the next page
+    # in the article.
     candidates = {}
     for link in links:
         eval_possible_next_page_link(
@@ -789,28 +799,44 @@ def find_next_page_link(parsed_urls, url, elem):
                 )
     top_page = None
     for url, page in candidates.items():
-        logging.debug('next page score of %s: %s' % (url, page.score))
+        log.debug('next page score of %s: %s' % (url, page.score))
         if 50 <= page.score and (not top_page or top_page.score < page.score):
             top_page = page
 
     if top_page:
-        logging.debug('next page link found: %s' % top_page.href)
+        log.debug('next page link found: %s' % top_page.href)
         parsed_urls.add(top_page.href)
         return top_page.href
     else:
         return None
 
 
-def append_next_page(fetcher, next_page_link, doc):
-    # html = fetcher.urlread(next_page_link)
-    # page_doc = parse(html, next_page_link)
-    pass
+def append_next_page(parsed_urls, page_url, doc, options):
+    log.debug(str((parsed_urls, page_url, doc, options)))
+    log.debug('appending next page: %s' % page_url)
+    fetcher = options['urlfetch']
+    html = fetcher.urlread(page_url)
+    orig_page_doc = parse(html, page_url)
+    next_page_url = find_next_page_url(parsed_urls, page_url, orig_page_doc)
+    page_article = get_article(orig_page_doc, options)
+    log.debug('Appending '  + str(page_article))
+    if page_article.html:
+        page_doc = fragment_fromstring(page_article.html)
+        # page_doc is a singular element containing the page article elements.  We
+        # want to add its children to the main article document to which we are
+        # appending a page.
+        for elem in page_doc:
+            doc.append(elem)
+    if next_page_url is not None:
+        append_next_page(parsed_urls, next_page_url, doc, options)
 
 
 def parse(input, url):
     raw_doc = build_doc(input)
     doc = html_cleaner.clean_html(raw_doc)
+    log.debug('parse url: %s', url)
     if url:
+        log.debug('making links absolute')
         doc.make_links_absolute(url, resolve_base_href=True)
     else:
         doc.resolve_base_href()
@@ -831,6 +857,8 @@ class Document:
             - attributes:
             - debug: output debug messages
             - min_text_length:
+            - multipage: should we check for page 2/3 of article and build
+              together?
             - retry_length:
             - url: will allow adjusting links to be absolute
 
@@ -840,7 +868,12 @@ class Document:
 
         self.input_doc = input_doc
         self.options = options
-        self.options['urlfetch'] = urlfetch.UrlFetch()
+        self.options['urlfetch'] = self.options.get('urlfetch',
+            urlfetch.UrlFetch())
+        self.options['min_text_length'] = self.options.get('min_text_length',
+            self.TEXT_LENGTH_THRESHOLD)
+        self.options['retry_length'] = self.options.get('retry_length',
+            self.RETRY_LENGTH)
         self._html = None
 
     @property
@@ -877,23 +910,20 @@ class Document:
         return summary.html
 
     def _summary(self, enclose_with_html_tag=True):
+        # the first page parsed into a elementree element
         doc = self.html
+
+        # the set of urls we've processed so far
         parsed_urls = set()
         url = self.options.get('url', None)
         if url is not None:
             parsed_urls.add(url)
-        next_page_link = find_next_page_link(parsed_urls, url, doc)
-        if next_page_link is not None:
-            fetcher = self.options.get('urlfetch')
-            append_next_page(fetcher, next_page_link, doc)
-        min_text_len = self.options.get(
-                'min_text_length',
-                self.TEXT_LENGTH_THRESHOLD
-                )
-        retry_len = self.options.get('retry_length', self.RETRY_LENGTH)
-        return get_article(doc, min_text_len, retry_len,
-                enclose_with_html_tag=enclose_with_html_tag)
 
-    def debug(self, *a):
-        if self.options.get('debug', False):
-            log.debug(*a)
+        # check the current doc for a next page if requested
+        if self.options.get('multipage', False):
+            next_page_link = find_next_page_url(parsed_urls, url, doc)
+            if next_page_link is not None:
+                append_next_page(parsed_urls, next_page_link, doc, self.options)
+
+        return get_article(doc, self.options,
+                enclose_with_html_tag=enclose_with_html_tag)

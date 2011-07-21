@@ -149,10 +149,17 @@ def make_path(dir_path, name, suffix):
     return os.path.join(dir_path, ''.join([name, suffix]))
 
 
+def adjust_url_map(url_map):
+    adjusted = dict()
+    for k, v in url_map.items():
+        adjusted[k] = os.path.join(TEST_DATA_PATH, v)
+    return adjusted
+
+
 def make_readability_test(dir_path, name, spec_dict):
     enabled = spec_dict.get('enabled', True)
     notes = spec_dict.get('notes', '')
-    url_map = spec_dict.get('url_map', dict())
+    url_map = adjust_url_map(spec_dict.get('url_map', dict()))
     return ReadabilityTest(
             dir_path,
             enabled,

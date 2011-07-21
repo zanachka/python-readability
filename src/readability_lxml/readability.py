@@ -658,6 +658,7 @@ def eval_href(parsed_urls, url, base_url, link):
 
     # If we've already seen this page, ignore it.
     if href == base_url or href == url or href in parsed_urls:
+        log.debug('rejecting %s: already seen page' % href)
         return raw_href, href, False
 
     # If it's on a different domain, skip it.
@@ -736,15 +737,20 @@ def eval_possible_next_page_link(parsed_urls, url, base_url, candidates, link):
         candidate.score += 25
 
     if REGEXES['firstLast'].search(link_data):
+        # If we already matched on "next", last is probably fine. If we didn't,
+        # then it's bad.  Penalize.
         if not REGEXES['nextLink'].search(candidate.link_text):
+            log.debug('link_data matched last but not next')
             candidate.score -= 65
 
     neg_re = REGEXES['negativeRe']
     ext_re = REGEXES['extraneous']
     if neg_re.search(link_data) or ext_re.search(link_data):
+        log.debug('link_data negative/extraneous regex match')
         candidate.score -= 50
 
     if REGEXES['prevLink'].search(link_data):
+        log.debug('link_data prevLink match')
         candidate.score -= 200
 
     parent = link.getparent()
@@ -756,11 +762,13 @@ def eval_possible_next_page_link(parsed_urls, url, base_url, candidates, link):
         parent_class_and_id = ' '.join([parent_class, parent_id])
         if not positive_node_match:
             if REGEXES['page'].search(parent_class_and_id):
+                log.debug('positive ancestor match')
                 positive_node_match = True
                 candidate.score += 25
         if not negative_node_match:
             if REGEXES['negativeRe'].search(parent_class_and_id):
                 if not REGEXES['positiveRe'].search(parent_class_and_id):
+                    log.debug('negative ancestor match')
                     negative_node_match = True
                     candidate.score -= 25
         parent = parent.getparent()
@@ -770,11 +778,13 @@ def eval_possible_next_page_link(parsed_urls, url, base_url, candidates, link):
         candidate.score += 25
 
     if REGEXES['extraneous'].search(href):
+        log.debug('extraneous regex match')
         candidate.score -= 15
 
     try:
         link_text_as_int = int(link_text)
 
+        log.debug('link_text looks like %d' % link_text_as_int)
         # Punish 1 since we're either already there, or it's probably before
         # what we want anyways.
         if link_text_as_int == 1:
@@ -783,6 +793,8 @@ def eval_possible_next_page_link(parsed_urls, url, base_url, candidates, link):
             candidate.score += max(0, 10 - link_text_as_int)
     except ValueError as exc:
         pass
+
+    log.debug('final score is %d' % candidate.score)
 
 def find_next_page_url(parsed_urls, url, elem):
     links = tags(elem, 'a')
@@ -830,15 +842,12 @@ def append_next_page(parsed_urls, page_url, doc, options):
         if doc.tag == 'html':
             children = doc.getchildren()
             if children[0].tag == 'head':
-                import ipdb; ipdb.set_trace()
                 for elem in page_doc:
                     doc.getchildren()[1].append(elem)
             else:
-                import ipdb; ipdb.set_trace()
                 for elem in page_doc:
                     doc.getchildren()[0].append(elem)
         else:
-            import ipdb; ipdb.set_trace()
             for elem in page_doc:
                 doc.append(elem)
     if next_page_url is not None:

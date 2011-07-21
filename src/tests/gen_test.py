@@ -4,16 +4,24 @@ test module.  It uses the current readability algorithm to capture a benchmark
 and construct a new test case.
 
 """
+from regression_test import (
+        TEST_DATA_PATH,
+        ORIGINAL_SUFFIX,
+        READABLE_SUFFIX,
+        YAML_EXTENSION,
+        adjust_url_map,
+        read_yaml
+        )
 import argparse
 import errno
 import os
 import os.path
 import sys
-import test
 import urllib2
 import yaml
 
 from readability_lxml import readability
+from readability_lxml import urlfetch
 
 
 OVERWRITE_QUESTION = '%s exists; overwrite and continue (y/n)? '
@@ -27,7 +35,7 @@ def y_or_n(question):
 
 
 def write_file(test_name, suffix, data):
-    path = os.path.join(test.TEST_DATA_PATH, test_name + suffix)
+    path = os.path.join(TEST_DATA_PATH, test_name + suffix)
     mode = 0644
     try:
         fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, mode)
@@ -44,21 +52,22 @@ def write_file(test_name, suffix, data):
     return True
 
 
-def write_original(test_name, url):
-    orig = urllib2.urlopen(url).read()
-    return write_file(test_name, test.ORIGINAL_SUFFIX, orig)
+def write_original(test_name, orig):
+    return write_file(test_name, ORIGINAL_SUFFIX, orig)
 
-def write_readable(test_name, orig):
-    rdbl_doc = readability.Document(orig)
+
+def write_readable(test_name, orig, options):
+    rdbl_doc = readability.Document(orig, **options)
     summary = rdbl_doc.summary()
-    return write_file(test_name, test.READABLE_SUFFIX, summary.html)
+    return write_file(test_name, READABLE_SUFFIX, summary.html)
+
 
 def read_spec(test_name):
     yaml_path = os.path.join(
-            test.TEST_DATA_PATH,
-            test_name + test.YAML_EXTENSION
+            TEST_DATA_PATH,
+            test_name + YAML_EXTENSION
             )
-    return test.read_yaml(yaml_path)
+    return read_yaml(yaml_path)
 
 def read_orig(test_name, url = None):
     """
@@ -69,39 +78,44 @@ def read_orig(test_name, url = None):
     """
     if url:
         orig = urllib2.urlopen(url).read()
-        write_result = write_file(test_name, test.ORIGINAL_SUFFIX, orig)
+        write_result = write_file(test_name, ORIGINAL_SUFFIX, orig)
         return orig, write_result
     else:
         orig_path = os.path.join(
-                test.TEST_DATA_PATH,
-                test_name + test.ORIGINAL_SUFFIX
+                TEST_DATA_PATH,
+                test_name + ORIGINAL_SUFFIX
                 )
         orig = open(orig_path).read()
         return orig, True
 
 def create(args):
+    # TODO: Make this work for multi-page articles.
     spec_dict = {'url': args.url, 'test_description': args.test_description}
     spec = yaml.dump(spec_dict, default_flow_style = False)
-    if not write_file(args.test_name, test.YAML_EXTENSION, spec):
+    if not write_file(args.test_name, YAML_EXTENSION, spec):
         return False
-    if not write_original(args.test_name, args.url):
+    orig = urllib2.urlopen(url).read()
+    if not write_original(args.test_name, orig):
         return False
-    if not write_readable(args.test_name, args.url):
+    if not write_readable(args.test_name, orig):
         return False
     return True
 
 def genbench(args):
+    spec_dict = read_spec(args.test_name)
     if args.refetch:
-        spec_dict = read_spec(args.test_name)
         url = spec_dict['url']
     else:
         url = None
+    url_map = adjust_url_map(spec_dict.get('url_map', dict()))
+    fetcher = urlfetch.MockUrlFetch(url_map)
+    options = {'url': spec_dict['url'], 'urlfetch': fetcher}
     orig, success = read_orig(args.test_name, url)
     if not success:
         return False
-    rdbl_doc = readability.Document(orig)
+    rdbl_doc = readability.Document(orig, **options)
     summary = rdbl_doc.summary()
-    if not write_file(args.test_name, test.READABLE_SUFFIX, summary.html):
+    if not write_file(args.test_name, READABLE_SUFFIX, summary.html):
         return False
     return True
 

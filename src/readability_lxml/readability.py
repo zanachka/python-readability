@@ -9,12 +9,11 @@ import urlfetch
 from collections import namedtuple
 from lxml.etree import tostring
 from lxml.etree import tounicode
+from lxml.html.diff import htmldiff
 from lxml.html import document_fromstring
 from lxml.html import fragment_fromstring
 
 from cleaners import clean_attributes
-
-
 from cleaners import html_cleaner
 from htmls import build_doc
 from htmls import get_body

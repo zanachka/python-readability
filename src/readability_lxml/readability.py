@@ -27,6 +27,7 @@ log = logging.getLogger()
 
 
 REGEXES = {
+<<<<<<< HEAD:src/readability_lxml/readability.py
     'unlikelyCandidatesRe': re.compile(
         ('combx|comment|community|disqus|extra|foot|header|menu|remark|rss|'
         'shoutbox|sidebar|sponsor|ad-break|agegate|pagination|pager|popup|'
@@ -46,7 +47,7 @@ REGEXES = {
     'divToPElementsRe': re.compile(
         '<(a|blockquote|dl|div|img|ol|p|pre|table|ul)', re.I),
     # Match: next, continue, >, >>, but not >|, as those usually mean last.
-    'nextLink': re.compile(r'(next|weiter|continue|>[^\|]|$)', re.I),
+    'nextLink': re.compile(r'(next|weiter|continue|>[^\|]$)', re.I), # Match: next, continue, >, >>, but not >|, as those usually mean last.
     'prevLink': re.compile(r'(prev|earl|old|new|<)', re.I),
     'page': re.compile(r'pag(e|ing|inat)', re.I),
     'firstLast': re.compile(r'(first|last)', re.I)

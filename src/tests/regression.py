@@ -17,6 +17,7 @@ import os.path
 import re
 import sys
 import unittest
+import readability.urlfetch
 import yaml
 
 from lxml.html import builder as B

@@ -24,6 +24,7 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
 
 
+PAGE_CLASS = 'article-page'
 REGEXES = {
     'unlikelyCandidatesRe': re.compile(
         ('combx|comment|community|disqus|extra|foot|header|menu|remark|rss|'
@@ -408,8 +409,10 @@ def get_raw_article(candidates, best_candidate, enclose_with_html_tag=True):
     sibling_score_threshold = max([10, best_candidate['content_score'] * 0.2])
     if enclose_with_html_tag:
         output = document_fromstring('<div/>')
+        output.getchildren()[0].attrib['id'] = 'page'
     else:
         output = fragment_fromstring('<div/>')
+        output.attrib['id'] = 'page'
     best_elem = best_candidate['elem']
     if best_elem.getparent() is not None:
         for sibling in best_elem.getparent().getchildren():
@@ -476,7 +479,7 @@ def get_article(doc, options, enclose_with_html_tag=True):
             if best_candidate:
                 confidence = best_candidate['content_score']
                 article = get_raw_article(candidates, best_candidate,
-                        enclose_with_html_tag=enclose_with_html_tag)
+                    enclose_with_html_tag=enclose_with_html_tag)
             else:
                 if ruthless:
                     log.debug("ruthless removal did not work. ")
@@ -825,34 +828,76 @@ def find_next_page_url(parsed_urls, url, elem):
         return None
 
 
-def append_next_page(parsed_urls, page_url, doc, options):
-    log.debug(str((parsed_urls, page_url, doc, options)))
-    log.debug('appending next page: %s' % page_url)
+def page_id(i):
+    return 'page-%d' % (i + 1)
+
+
+def make_page_elem(page_index, elem):
+    elem.attrib['id'] = page_id(page_index)
+    elem.attrib['class'] = PAGE_CLASS
+
+
+def first_paragraph(elem):
+    paragraphs = elem.xpath('.//p')
+    logging.debug('len(paragraphs) is %d' % len(paragraphs))
+    if len(paragraphs) > 0:
+        return paragraphs[0]
+    else:
+        return None
+
+
+def is_suspected_duplicate(doc, page_doc):
+    page_p = first_paragraph(page_doc)
+    if page_p is None:
+        return False
+    pages = doc.xpath('//*[contains(@class, $name)]', name = PAGE_CLASS)
+    for existing_page in pages:
+        existing_page_p = first_paragraph(existing_page)
+        if existing_page_p is not None:
+            page_p_content = page_p.xpath('string()')
+            existing_page_p_content = existing_page_p.xpath('string()')
+            if page_p.xpath('string()') == existing_page_p.xpath('string()'):
+                return True
+    return False
+
+
+def append_next_page(parsed_urls, page_index, page_url, doc, options):
+    logging.debug('appending next page: %s' % page_url)
     fetcher = options['urlfetch']
     html = fetcher.urlread(page_url)
     orig_page_doc = parse(html, page_url)
     next_page_url = find_next_page_url(parsed_urls, page_url, orig_page_doc)
     page_article = get_article(orig_page_doc, options)
     log.debug('Appending '  + str(page_article))
+
     if page_article.html:
         page_doc = fragment_fromstring(page_article.html)
-        # page_doc is a singular element containing the page article elements.  We
-        # want to add its children to the main article document to which we are
-        # appending a page.
-        if doc.tag == 'html':
-            children = doc.getchildren()
-            if children[0].tag == 'head':
-                for elem in page_doc:
-                    doc.getchildren()[1].append(elem)
+        make_page_elem(page_index, page_doc)
+
+        if not is_suspected_duplicate(doc, page_doc):
+            # page_doc is a singular element containing the page article elements.  We
+            # want to add its children to the main article document to which we are
+            # appending a page.
+            if doc.tag == 'html':
+                children = doc.getchildren()
+                if children[0].tag == 'head':
+                    for elem in page_doc:
+                        doc.getchildren()[1].append(elem)
+                else:
+                    for elem in page_doc:
+                        doc.getchildren()[0].append(elem)
             else:
                 for elem in page_doc:
-                    doc.getchildren()[0].append(elem)
-        else:
-            for elem in page_doc:
-                doc.append(elem)
-    if next_page_url is not None:
-        append_next_page(parsed_urls, next_page_url, doc, options)
-
+                    doc.append(elem)
+            doc.append(page_doc)
+            if next_page_url is not None:
+                append_next_page(
+                        parsed_urls,
+                        page_index + 1,
+                        next_page_url,
+                        doc,
+                        options
+                        )
 
 def parse(input, url):
     raw_doc = build_doc(input)
@@ -916,6 +961,30 @@ class Document:
         :param enclose_with_html_tag: Bool do you want a full <html> document
         or just the <div> html partial.
 
+    def summary(self):
+        doc = self._html(True)
+        parsed_urls = set()
+        url = self.options['url']
+        if url is not None:
+            parsed_urls.add(url)
+        next_page_url = find_next_page_url(parsed_urls, url, doc)
+        page_0 = get_article(doc, self.options)
+        page_0_doc = fragment_fromstring(page_0.html)
+        page_index = 0
+        make_page_elem(page_index, page_0_doc)
+        article_doc = B.DIV(page_0_doc)
+        article_doc.attrib['id'] = 'article'
+        if next_page_url is not None:
+            append_next_page(
+                    parsed_urls,
+                    page_index + 1,
+                    next_page_url,
+                    article_doc,
+                    self.options
+                    )
+        return Summary(page_0.confidence, tostring(article_doc))
+
+
         """
         summary = self._summary(enclose_with_html_tag=enclose_with_html_tag)
         # For this call return the raw Summary object.
@@ -944,9 +1013,38 @@ class Document:
 
         # check the current doc for a next page if requested
         if self.options.get('multipage', False):
-            next_page_link = find_next_page_url(parsed_urls, url, doc)
-            if next_page_link is not None:
-                append_next_page(parsed_urls, next_page_link, doc, self.options)
+            next_page_url = find_next_page_url(parsed_urls, url, doc)
+
+            page_0 = get_article(doc, self.options)
+            page_0_doc = fragment_fromstring(page_0.html)
+            page_index = 0
+            make_page_elem(page_index, page_0_doc)
+
+            if enclose_with_html_tag:
+                output = document_fromstring('<div/>')
+                output.getchildren()[0].attrib['id'] = 'article'
+                output.getchildren()[0].append(page_0_doc)
+            else:
+                output = fragment_fromstring('<div/>')
+                output.attrib['id'] = 'article'
+                output.append(page_0_doc)
+
+            if next_page_url is not None:
+                append_next_page(
+                        parsed_urls,
+                        page_index + 1,
+                        next_page_url,
+                        output,
+                        self.options
+                        )
+            return Summary(tostring(output),
+                page_0.confidence,
+                short_title=shorten_title(output),
+                title=get_title(output))
 
         return get_article(doc, self.options,
                 enclose_with_html_tag=enclose_with_html_tag)
+
+
+
+

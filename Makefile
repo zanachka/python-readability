@@ -10,11 +10,11 @@ NOSE := bin/nosetests
 # Tests rule!
 # ###########
 .PHONY: test
-test: venv develop $(NOSE)
+test: venv $(NOSE)
 	$(NOSE) --with-id -s tests
 
 $(NOSE):
-	$(PIP) install nose pep8 coverage
+	$(PY) setup.py test
 
 # #######
 # INSTALL
@@ -30,8 +30,9 @@ bin/python:
 clean_venv:
 	rm -rf bin include lib local man
 
-develop: lib/python*/site-packages/bookie-api.egg-link
-lib/python*/site-packages/bookie-api.egg-link:
+.PHONY: develop
+develop: lib/python*/site-packages/readability_lxml.egg-link
+lib/python*/site-packages/readability_lxml.egg-link:
 	$(PY) setup.py develop
 
 
@@ -40,6 +41,9 @@ lib/python*/site-packages/bookie-api.egg-link:
 # ###########
 .PHONY: clean_all
 clean_all: clean_venv
+	if [ -d dist ]; then \
+		rm -r dist; \
+    fi
 
 
 # ###########

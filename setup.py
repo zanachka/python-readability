@@ -1,22 +1,33 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
 
+version = "0.2.5"
+install_requires = [
+    "chardet",
+    "lxml",
+]
+tests_require = [
+    'coverage',
+    'nose',
+    'pep8',
+]
+
 setup(
     name="readability-lxml",
-    version="0.2.5",
+    version=version,
     author="Yuri Baburov",
     author_email="burchik@gmail.com",
     description="fast python port of arc90's readability tool",
-    test_suite = "tests.test_article_only",
+    keywords='readable read parse html document readability',
     long_description=open("README").read(),
     license="Apache License 2.0",
     url="http://github.com/buriy/python-readability",
     package_dir={'': 'readability'},
     packages=find_packages('readability', exclude=["*.tests", "*.tests.*"]),
-    install_requires=[
-        "chardet",
-        "lxml"
-        ],
+    install_requires=install_requires,
+    extras_require={'test': tests_require},
+    test_suite = "nose.collector",
+    # test_suite="tests.test_article_only",
     classifiers=[
         "Environment :: Web Environment",
         "Intended Audience :: Developers",

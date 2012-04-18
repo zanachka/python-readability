@@ -11,7 +11,7 @@ NOSE := bin/nosetests
 # ###########
 .PHONY: test
 test: venv $(NOSE)
-	$(NOSE) --with-id -s tests
+	$(NOSE) --with-id -s src/tests
 
 $(NOSE):
 	$(PY) setup.py test
@@ -28,7 +28,7 @@ bin/python:
 
 .PHONY: clean_venv
 clean_venv:
-	rm -rf bin include lib local man
+	rm -rf bin include lib local man share
 
 .PHONY: develop
 develop: lib/python*/site-packages/readability_lxml.egg-link

@@ -21,17 +21,23 @@ setup(
     keywords='readable read parse html document readability',
     long_description=open("README").read(),
     license="Apache License 2.0",
-    url="http://github.com/buriy/python-readability",
-    package_dir={'': 'readability'},
-    packages=find_packages('readability', exclude=["*.tests", "*.tests.*"]),
-    install_requires=install_requires,
-    extras_require={'test': tests_require},
-    test_suite = "nose.collector",
-    # test_suite="tests.test_article_only",
     classifiers=[
         "Environment :: Web Environment",
         "Intended Audience :: Developers",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
-        ],
+    ],
+    url="http://github.com/buriy/python-readability",
+    packages=find_packages('src'),
+    package_dir = {'': 'src'},
+    include_package_data=True,
+    zip_safe=False,
+    install_requires=install_requires,
+    extras_require={'test': tests_require},
+    test_suite = "nose.collector",
+    entry_points={
+        'console_scripts':
+            ['readability=readability_lxml:client.main']
+    },
+
 )

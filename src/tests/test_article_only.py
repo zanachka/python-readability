@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from readability import Document
+from readability_lxml.readability import Document
 
 
 SAMPLES = os.path.join(os.path.dirname(__file__), 'samples')

@@ -1,7 +1,7 @@
 import argparse
 import sys
 
-from readability_lxmly import VERSION
+from readability_lxml import VERSION
 from readability_lxml.readability import Document
 
 

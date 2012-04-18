@@ -7,5 +7,6 @@ dist
 /lib
 /local
 /man
+/share
 nosetests.xml
 .coverage

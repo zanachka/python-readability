@@ -12,6 +12,7 @@ tests_require = [
     'pep8',
 ]
 
+
 setup(
     name="readability-lxml",
     version=version,

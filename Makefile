@@ -59,4 +59,4 @@ upload:
 
 .PHONY: version_update
 version_update:
-	$(EDITOR) setup.py
+	$(EDITOR) setup.py src/readability_lxml/__init__.py

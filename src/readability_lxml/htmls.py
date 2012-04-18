@@ -17,8 +17,10 @@ LOG = logging.getLogger()
 
 
 def build_doc(page):
-    LOG.info('BUILD DOC')
-    LOG.info(type(page))
+    """Requires that the `page` not be None"""
+    if page is None:
+        LOG.error("Page content is None, can't build_doc")
+        return ''
     if isinstance(page, unicode):
         page_unicode = page
     else:

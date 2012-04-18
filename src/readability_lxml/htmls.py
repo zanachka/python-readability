@@ -13,7 +13,12 @@ logging.getLogger().setLevel(logging.DEBUG)
 utf8_parser = HTMLParser(encoding='utf-8')
 
 
+LOG = logging.getLogger()
+
+
 def build_doc(page):
+    LOG.info('BUILD DOC')
+    LOG.info(type(page))
     if isinstance(page, unicode):
         page_unicode = page
     else:

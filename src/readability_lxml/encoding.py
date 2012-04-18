@@ -1,8 +1,14 @@
+import logging
 import re
 import chardet
 
 
+LOG = logging.getLogger()
+
+
 def get_encoding(page):
+    LOG.info('GET ENCODING')
+    LOG.info(type(page))
     text = re.sub('</?[^>]*>\s*', ' ', page)
     enc = 'utf-8'
     if not text.strip() or len(text) < 10:

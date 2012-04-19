@@ -20,7 +20,7 @@ setup(
     author_email="burchik@gmail.com",
     description="fast python port of arc90's readability tool",
     keywords='readable read parse html document readability',
-    long_description=open("README").read(),
+    long_description=open("README.rst").read(),
     license="Apache License 2.0",
     classifiers=[
         "Environment :: Web Environment",

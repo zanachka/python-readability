@@ -9,12 +9,12 @@ It also can clean up title based on latest readability.js code.
 
 Inspiration
 -----------
- - Latest readability.js ( https://github.com/MHordecki/readability-redux/blob/master/readability/readability.js )
- - Ruby port by starrhorne and iterationlabs
- - Python port by gfxmonk ( https://github.com/gfxmonk/python-readability , based on BeautifulSoup )
- - Decruft effort to move to lxml ( http://www.minvolai.com/blog/decruft-arc90s-readability-in-python/ )
- - "BR to P" fix from readability.js which improves quality for smaller texts.
- - Github users contributions.
+- Latest readability.js ( https://github.com/MHordecki/readability-redux/blob/master/readability/readability.js )
+- Ruby port by starrhorne and iterationlabs
+- Python port by gfxmonk ( https://github.com/gfxmonk/python-readability , based on BeautifulSoup )
+- Decruft effort to move to lxml ( http://www.minvolai.com/blog/decruft-arc90s-readability-in-python/ )
+- "BR to P" fix from readability.js which improves quality for smaller texts.
+- Github users contributions.
 
 
 Installation
@@ -58,7 +58,7 @@ Optional `Document` keyword argument:
 History
 -------
 
- - `0.2.5`` Update setup.py for uploading .tar.gz to pypi
+- `0.2.5`` Update setup.py for uploading .tar.gz to pypi
 
 
 .. _arc90's readability: http://lab.arc90.com/experiments/readability/

@@ -36,4 +36,3 @@ class TestArticleOnly(unittest.TestCase):
         doc = Document(sample, url='http://sportsillustrated.cnn.com/baseball/mlb/gameflash/2012/04/16/40630_preview.html')
         res = doc.summary(enclose_with_html_tag=True)
         self.assertEqual('<div><div class="', res[0:17])
-

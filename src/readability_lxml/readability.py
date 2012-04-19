@@ -159,7 +159,6 @@ class Document:
                     self.remove_unlikely_candidates()
                 self.transform_misused_divs_into_paragraphs()
                 candidates = self.score_paragraphs()
-
                 best_candidate = self.select_best_candidate(candidates)
 
                 if best_candidate:
@@ -249,6 +248,7 @@ class Document:
         sorted_candidates = sorted(candidates.values(),
             key=lambda x: x['content_score'],
             reverse=True)
+
         for candidate in sorted_candidates[:5]:
             elem = candidate['elem']
             self.debug("Top 5 : %6.3f %s" % (

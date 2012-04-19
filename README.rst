@@ -58,7 +58,7 @@ Optional `Document` keyword argument:
 History
 -------
 
-- `0.2.5`` Update setup.py for uploading .tar.gz to pypi
+- `0.2.5` Update setup.py for uploading .tar.gz to pypi
 
 
 .. _arc90's readability: http://lab.arc90.com/experiments/readability/

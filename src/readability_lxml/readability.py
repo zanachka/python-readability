@@ -82,10 +82,10 @@ class Document:
     TEXT_LENGTH_THRESHOLD = 25
     RETRY_LENGTH = 250
 
-    def __init__(self, input, **options):
+    def __init__(self, input_doc, **options):
         """Generate the document
 
-        :param input: string of the html content.
+        :param input_doc: string of the html content.
 
         kwargs:
             - attributes:
@@ -95,17 +95,20 @@ class Document:
             - url: will allow adjusting links to be absolute
 
         """
-        self.input = input
+        if input_doc is None:
+            raise ValueError('You must supply a document to process.')
+
+        self.input_doc = input_doc
         self.options = options
         self.html = None
 
     def _html(self, force=False):
         if force or self.html is None:
-            self.html = self._parse(self.input)
+            self.html = self._parse(self.input_doc)
         return self.html
 
-    def _parse(self, input):
-        doc = build_doc(input)
+    def _parse(self, input_doc):
+        doc = build_doc(input_doc)
         doc = html_cleaner.clean_html(doc)
         base_href = self.options.get('url', None)
         if base_href:

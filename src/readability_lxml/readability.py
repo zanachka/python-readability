@@ -217,9 +217,10 @@ class Document:
             if sibling is best_elem:
                 append = True
             sibling_key = sibling  # HashableElement(sibling)
-            if sibling_key in candidates and \
-                candidates[sibling_key]['content_score'] >= sibling_score_threshold:
-                append = True
+            if sibling_key in candidates:
+                sib_threshhold = sibling_score_threshold
+                if candidates[sibling_key]['content_score'] >= sib_threshhold:
+                    append = True
 
             if sibling.tag == "p":
                 link_density = self.get_link_density(sibling)
@@ -294,10 +295,11 @@ class Document:
                 candidates[parent_node] = self.score_node(parent_node)
                 ordered.append(parent_node)
 
-            if grand_parent_node is not None and grand_parent_node not in candidates:
-                candidates[grand_parent_node] = self.score_node(
-                    grand_parent_node)
-                ordered.append(grand_parent_node)
+            if grand_parent_node is not None:
+                if grand_parent_node not in candidates:
+                    candidates[grand_parent_node] = self.score_node(
+                        grand_parent_node)
+                    ordered.append(grand_parent_node)
 
             content_score = 1
             content_score += len(inner_text.split(','))
@@ -308,7 +310,8 @@ class Document:
             #WTF? candidates[elem]['content_score'] += content_score
             candidates[parent_node]['content_score'] += content_score
             if grand_parent_node is not None:
-                candidates[grand_parent_node]['content_score'] += content_score / 2.0
+                add_to_score = content_score / 2.0
+                candidates[grand_parent_node]['content_score'] += add_to_score
 
         # Scale the final candidates score based on link density. Good content
         # should have a relatively small link density (5% or less) and be
@@ -370,9 +373,12 @@ class Document:
             if len(s) < 2:
                 continue
             #self.debug(s)
-            if REGEXES['unlikelyCandidatesRe'].search(s) and (not REGEXES['okMaybeItsACandidateRe'].search(s)) and elem.tag not in ['html', 'body']:
-                self.debug("Removing unlikely candidate - %s" % describe(elem))
-                elem.drop_tree()
+            if REGEXES['unlikelyCandidatesRe'].search(s):
+                if not REGEXES['okMaybeItsACandidateRe'].search(s):
+                    if elem.tag not in ['html', 'body']:
+                        self.debug("Removing unlikely candidate - %s" %
+                            describe(elem))
+                        elem.drop_tree()
 
     def transform_misused_divs_into_paragraphs(self):
         for elem in self.tags(self.html, 'div'):
@@ -421,7 +427,9 @@ class Document:
         MIN_LEN = self.options.get('min_text_length',
             self.TEXT_LENGTH_THRESHOLD)
         for header in self.tags(node, "h1", "h2", "h3", "h4", "h5", "h6"):
-            if self.class_weight(header) < 0 or self.get_link_density(header) > 0.33:
+            class_weight = self.class_weight(header)
+            link_density = self.get_link_density(header)
+            if class_weight < 0 or link_density > 0.33:
                 header.drop_tree()
 
         for elem in self.tags(node, "form", "iframe", "textarea"):
@@ -455,7 +463,8 @@ class Document:
                 parent_node = el.getparent()
                 if parent_node is not None:
                     if parent_node in candidates:
-                        content_score = candidates[parent_node]['content_score']
+                        parent = candidates[parent_node]
+                        content_score = parent['content_score']
                     else:
                         content_score = 0
                 #if parent_node is not None:

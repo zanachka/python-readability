@@ -100,7 +100,15 @@ class Document:
 
         self.input_doc = input_doc
         self.options = options
-        self.html = None
+        self._html = None
+
+    @property
+    def html(self):
+        """The parsed html document from the input"""
+        if not self._html:
+            self._html = self._parse(self.input_doc)
+
+        return self._html
 
     def _parse(self, input_doc):
         doc = build_doc(input_doc)
@@ -113,13 +121,13 @@ class Document:
         return doc
 
     def content(self):
-        return get_body(self._html(True))
+        return get_body(self.html)
 
     def title(self):
-        return get_title(self._html(True))
+        return get_title(self.html)
 
     def short_title(self):
-        return shorten_title(self._html(True))
+        return shorten_title(self.html)
 
     def summary(self, enclose_with_html_tag=False):
         """Generate the summary of the html docuemnt
@@ -255,7 +263,7 @@ class Document:
             self.TEXT_LENGTH_THRESHOLD)
         candidates = {}
         ordered = []
-        for elem in self.tags(self._html(), "p", "pre", "td"):
+        for elem in self.tags(self.html, "p", "pre", "td"):
             parent_node = elem.getparent()
             if parent_node is None:
                 continue

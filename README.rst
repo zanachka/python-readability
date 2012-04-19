@@ -1,14 +1,14 @@
-This code is under the Apache License 2.0.  http://www.apache.org/licenses/LICENSE-2.0
+readability_lxml
+================
 
-This is a python port of a ruby port of arc90's readability project
+This is a python port of a ruby port of `arc90's readability`_ project
 
-http://lab.arc90.com/experiments/readability/
-
-In few words,
 Given a html document, it pulls out the main body text and cleans it up.
 It also can clean up title based on latest readability.js code.
 
-Based on:
+
+Inspiration
+-----------
  - Latest readability.js ( https://github.com/MHordecki/readability-redux/blob/master/readability/readability.js )
  - Ruby port by starrhorne and iterationlabs
  - Python port by gfxmonk ( https://github.com/gfxmonk/python-readability , based on BeautifulSoup )
@@ -16,13 +16,29 @@ Based on:
  - "BR to P" fix from readability.js which improves quality for smaller texts.
  - Github users contributions.
 
-Installation::
 
-    easy_install readability-lxml
-    or
-    pip install readability-lxml
+Installation
+-------------
+::
 
-Usage::
+    $ easy_install readability-lxml
+    # or
+    $ pip install readability-lxml
+
+
+Usage
+------
+
+Command Line Client
+~~~~~~~~~~~~~~~~~~~
+::
+
+    $ readability http://pypi.python.org/pypi/readability-lxml
+    $ readability /home/rharding/sampledoc.html
+
+As a Library
+~~~~~~~~~~~~
+::
 
     from readability.readability import Document
     import urllib
@@ -30,21 +46,19 @@ Usage::
     readable_article = Document(html).summary()
     readable_title = Document(html).short_title()
 
-Command-line usage::
+Optional `Document` keyword argument:
 
-    python -m readability.readability -u http://pypi.python.org/pypi/readability-lxml
-
-
-Document() kwarg options:
-
- - attributes:
- - debug: output debug messages
- - min_text_length:
- - retry_length:
- - url: will allow adjusting links to be absolute
+- attributes:
+- debug: output debug messages
+- min_text_length:
+- retry_length:
+- url: will allow adjusting links to be absolute
 
 
-Updates
+History
+-------
 
- - 0.2.5 Update setup.py for uploading .tar.gz to pypi
+ - `0.2.5`` Update setup.py for uploading .tar.gz to pypi
 
+
+.. _arc90's readability: http://lab.arc90.com/experiments/readability/

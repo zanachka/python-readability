@@ -102,11 +102,6 @@ class Document:
         self.options = options
         self.html = None
 
-    def _html(self, force=False):
-        if force or self.html is None:
-            self.html = self._parse(self.input_doc)
-        return self.html
-
     def _parse(self, input_doc):
         doc = build_doc(input_doc)
         doc = html_cleaner.clean_html(doc)
@@ -136,7 +131,8 @@ class Document:
         try:
             ruthless = True
             while True:
-                self._html(True)
+                self.html = self._parse(self.input_doc)
+
                 for i in self.tags(self.html, 'script', 'style'):
                     i.drop_tree()
                 for i in self.tags(self.html, 'body'):

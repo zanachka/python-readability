@@ -22,18 +22,28 @@ log = logging.getLogger()
 
 
 REGEXES = {
-    'unlikelyCandidatesRe': re.compile('combx|comment|community|disqus|extra|foot|header|menu|remark|rss|shoutbox|sidebar|sponsor|ad-break|agegate|pagination|pager|popup|tweet|twitter', re.I),
-    'okMaybeItsACandidateRe': re.compile('and|article|body|column|main|shadow', re.I),
-    'positiveRe': re.compile('article|body|content|entry|hentry|main|page|pagination|post|text|blog|story', re.I),
-    'negativeRe': re.compile('combx|comment|com-|contact|foot|footer|footnote|masthead|media|meta|outbrain|promo|related|scroll|shoutbox|sidebar|sponsor|shopping|tags|tool|widget', re.I),
-    'divToPElementsRe': re.compile('<(a|blockquote|dl|div|img|ol|p|pre|table|ul)', re.I),
+    'unlikelyCandidatesRe': re.compile(
+        ('combx|comment|community|disqus|extra|foot|header|menu|remark|rss|'
+        'shoutbox|sidebar|sponsor|ad-break|agegate|pagination|pager|popup|'
+        'tweet|twitter'), re.I),
+    'okMaybeItsACandidateRe': re.compile(
+        'and|article|body|column|main|shadow', re.I),
+    'positiveRe': re.compile(
+        ('article|body|content|entry|hentry|main|page|pagination|post|text|'
+        'blog|story'), re.I),
+    'negativeRe': re.compile(
+        ('combx|comment|com-|contact|foot|footer|footnote|masthead|media|meta|'
+        'outbrain|promo|related|scroll|shoutbox|sidebar|sponsor|shopping|tags|'
+        'tool|widget'), re.I),
+    'divToPElementsRe': re.compile(
+        '<(a|blockquote|dl|div|img|ol|p|pre|table|ul)', re.I),
     #'replaceBrsRe': re.compile('(<br[^>]*>[ \n\r\t]*){2,}',re.I),
     #'replaceFontsRe': re.compile('<(\/?)font[^>]*>',re.I),
     #'trimRe': re.compile('^\s+|\s+$/'),
     #'normalizeRe': re.compile('\s{2,}/'),
     #'killBreaksRe': re.compile('(<br\s*\/?>(\s|&nbsp;?)*){1,}/'),
     #'videoRe': re.compile('http:\/\/(www\.)?(youtube|vimeo)\.com', re.I),
-    #skipFootnoteLink:      /^\s*(\[?[a-z0-9]{1,2}\]?|^|edit|citation needed)\s*$/i,
+    #skipFootnoteLink: /^\s*(\[?[a-z0-9]{1,2}\]?|^|edit|citation needed)\s*$/i,
 }
 
 
@@ -132,8 +142,8 @@ class Document:
     def summary(self, enclose_with_html_tag=False):
         """Generate the summary of the html docuemnt
 
-        :param enclose_with_html_tag: return only the div of the document, don't wrap
-        in html and body tags.
+        :param enclose_with_html_tag: return only the div of the document,
+        don't wrap in html and body tags.
 
         """
         try:
@@ -187,7 +197,8 @@ class Document:
             log.exception('error getting summary: ')
             raise Unparseable(str(e)), None, sys.exc_info()[2]
 
-    def get_article(self, candidates, best_candidate, enclose_with_html_tag=False):
+    def get_article(self, candidates, best_candidate,
+        enclose_with_html_tag=False):
         # Now that we have the top candidate, look through its siblings for
         # content that might also be related.
         # Things like preambles, content split by ads that we removed, etc.
@@ -235,7 +246,9 @@ class Document:
         return output
 
     def select_best_candidate(self, candidates):
-        sorted_candidates = sorted(candidates.values(), key=lambda x: x['content_score'], reverse=True)
+        sorted_candidates = sorted(candidates.values(),
+            key=lambda x: x['content_score'],
+            reverse=True)
         for candidate in sorted_candidates[:5]:
             elem = candidate['elem']
             self.debug("Top 5 : %6.3f %s" % (
@@ -466,7 +479,8 @@ class Document:
                     reason = "less than 3x <p>s than <input>s"
                     to_remove = True
                 elif content_length < (MIN_LEN) and (counts["img"] == 0 or counts["img"] > 2):
-                    reason = "too short content length %s without a single image" % content_length
+                    reason = ('too short content length %s without a single'
+                        ' image') % content_length
                     to_remove = True
                 elif weight < 25 and link_density > 0.2:
                         reason = "too many links %.3f for its weight %s" % (
@@ -477,36 +491,26 @@ class Document:
                         link_density, weight)
                     to_remove = True
                 elif (counts["embed"] == 1 and content_length < 75) or counts["embed"] > 1:
-                    reason = "<embed>s with too short content length, or too many <embed>s"
+                    reason = ('<embed>s with too short content length, or too'
+                        ' many <embed>s')
                     to_remove = True
-#                if el.tag == 'div' and counts['img'] >= 1 and to_remove:
-#                    imgs = el.findall('.//img')
-#                    valid_img = False
-#                    self.debug(tounicode(el))
-#                    for img in imgs:
-#
-#                        height = img.get('height')
-#                        text_length = img.get('text_length')
-#                        self.debug ("height %s text_length %s" %(repr(height), repr(text_length)))
-#                        if to_int(height) >= 100 or to_int(text_length) >= 100:
-#                            valid_img = True
-#                            self.debug("valid image" + tounicode(img))
-#                            break
-#                    if valid_img:
-#                        to_remove = False
-#                        self.debug("Allowing %s" %el.text_content())
-#                        for desnode in self.tags(el, "table", "ul", "div"):
-#                            allowed[desnode] = True
 
-                    #find x non empty preceding and succeeding siblings
+                    # don't really understand what this is doing. Originally
+                    # the i/j were =+ which sets the value to 1. I think that
+                    # was supposed to be += which would increment. But then
+                    # it's compared to x which is hard set to 1. So you only
+                    # ever do one loop in each iteration and don't understand
+                    # it. Will have to investigate when we get to testing more
+                    # pages.
                     i, j = 0, 0
                     x = 1
+
                     siblings = []
                     for sib in el.itersiblings():
                         #self.debug(sib.text_content())
                         sib_content_length = text_length(sib)
                         if sib_content_length:
-                            i =+ 1
+                            i += 1
                             siblings.append(sib_content_length)
                             if i == x:
                                 break
@@ -514,7 +518,7 @@ class Document:
                         #self.debug(sib.text_content())
                         sib_content_length = text_length(sib)
                         if sib_content_length:
-                            j =+ 1
+                            j += 1
                             siblings.append(sib_content_length)
                             if j == x:
                                 break
@@ -526,7 +530,8 @@ class Document:
                             allowed[desnode] = True
 
                 if to_remove:
-                    self.debug("Cleaned %6.3f %s with weight %s cause it has %s." %
+                    self.debug(
+                        "Cleaned %6.3f %s with weight %s cause it has %s." %
                         (content_score, describe(el), weight, reason))
                     #print tounicode(el)
                     #self.debug("pname %s pweight %.3f" %(pname, pweight))

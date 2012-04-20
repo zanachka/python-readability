@@ -17,6 +17,14 @@ Inspiration
 - Github users contributions.
 
 
+Try it out!
+-----------
+You can try out the parser by entering your test urls on the following test
+service.
+
+http://readable.bmark.us
+
+
 Installation
 -------------
 ::

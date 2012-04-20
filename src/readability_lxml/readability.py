@@ -139,7 +139,7 @@ class Document:
     def short_title(self):
         return shorten_title(self.html)
 
-    def summary(self, enclose_with_html_tag=False):
+    def summary(self, enclose_with_html_tag=True):
         """Generate the summary of the html docuemnt
 
         :param enclose_with_html_tag: return only the div of the document,
@@ -197,7 +197,7 @@ class Document:
             raise Unparseable(str(e)), None, sys.exc_info()[2]
 
     def get_article(self, candidates, best_candidate,
-        enclose_with_html_tag=False):
+        enclose_with_html_tag=True):
         # Now that we have the top candidate, look through its siblings for
         # content that might also be related.
         # Things like preambles, content split by ads that we removed, etc.
@@ -206,9 +206,9 @@ class Document:
             best_candidate['content_score'] * 0.2])
         # create a new html document with a html->body->div
         if enclose_with_html_tag:
-            output = fragment_fromstring('<div/>')
-        else:
             output = document_fromstring('<div/>')
+        else:
+            output = fragment_fromstring('<div/>')
         best_elem = best_candidate['elem']
         for sibling in best_elem.getparent().getchildren():
             # in lxml there no concept of simple text
@@ -238,9 +238,9 @@ class Document:
                 # We don't want to append directly to output, but the div
                 # in html->body->div
                 if enclose_with_html_tag:
-                    output.append(sibling)
-                else:
                     output.getchildren()[0].getchildren()[0].append(sibling)
+                else:
+                    output.append(sibling)
         #if output is not None:
         #    output.append(best_elem)
         return output

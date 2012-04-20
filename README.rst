@@ -63,6 +63,15 @@ Optional `Document` keyword argument:
 - url: will allow adjusting links to be absolute
 
 
+Test and BUild Status
+---------------------
+Tests are run against the package at:
+
+http://build.bmark.us/job/readability-lxml/
+
+You can view it for build history and test status.
+
+
 History
 -------
 

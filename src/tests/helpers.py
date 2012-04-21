@@ -2,7 +2,7 @@ import os
 
 
 SAMPLES = os.path.join(os.path.dirname(__file__), 'samples')
-REGRESSION_DATA = os.path.join(os.path.dirname(__file__), 'test_data')
+REGRESSION_DATA = os.path.join(os.path.dirname(__file__), 'regression_test_data')
 
 
 def load_sample(filename):

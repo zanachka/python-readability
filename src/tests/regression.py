@@ -29,8 +29,8 @@ RESULT_SUFFIX = '-result.html'
 YAML_EXTENSION = '.yaml'
 
 TESTDIR = os.path.dirname(__file__)
-TEST_DATA_PATH = os.path.join(TESTDIR, 'test_data')
-TEST_OUTPUT_PATH = os.path.join(TESTDIR, 'test_output')
+TEST_DATA_PATH = os.path.join(TESTDIR, 'regression_test_data')
+TEST_OUTPUT_PATH = os.path.join(TESTDIR, 'regression_test_output')
 TEST_SUMMARY_PATH = os.path.join(TEST_OUTPUT_PATH, 'index.html')
 
 SUMMARY_CSS = '''

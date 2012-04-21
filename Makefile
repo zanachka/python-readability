@@ -19,7 +19,7 @@ $(NOSE):
 .PHONY: regression_test
 regression_test:
 	$(PY) src/tests/regression.py
-	$(PY) -m webbrowser src/tests/test_output/index.html
+	$(PY) -m webbrowser src/tests/regression_test_output/index.html
 
 
 # #######

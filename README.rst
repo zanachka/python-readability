@@ -59,7 +59,7 @@ metadata such as the confidence score found while processing the input.
 
 ::
 
-    doc = Document(html).get_summary_with_metadata()
+    doc = Document(html).summary_with_metadata()
     print doc.html
     print doc.confidence
 

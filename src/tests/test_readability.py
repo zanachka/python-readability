@@ -124,3 +124,18 @@ class TestFindBaseUrl(unittest.TestCase):
                 )
                 ]
         self._run_urls(specs)
+
+    def test_short(self):
+        specs = [
+                (
+                'http://foo.com/en/1234567890',
+                'http://foo.com/1234567890',
+                'short segment should be stripped'
+                ),
+                (
+                'http://foo.com/en/de/1234567890',
+                'http://foo.com/en/1234567890',
+                'short segment should be stripped'
+                )
+                ]
+        self._run_urls(specs)

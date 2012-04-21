@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from setuptools import setup, find_packages
 
-version = "0.2.5"
+version = "0.3.0"
 install_requires = [
     "chardet",
     "lxml",
@@ -41,5 +41,4 @@ setup(
         'console_scripts':
             ['readability=readability_lxml:client.main']
     },
-
 )

@@ -10,6 +10,7 @@ tests_require = [
     'coverage',
     'nose',
     'pep8',
+    'PyYaml',
 ]
 
 
@@ -29,7 +30,7 @@ setup(
         "Programming Language :: Python",
     ],
     url="http://github.com/buriy/python-readability",
-    packages=find_packages('src'),
+    packages=find_packages('src', exclude=["*.tests", "*.tests.*"]),
     package_dir = {'': 'src'},
     include_package_data=True,
     zip_safe=False,

@@ -2,20 +2,20 @@ import lxml.html
 import lxml.html.diff
 import os
 import os.path
-import readability
 import sys
 import unittest
 import yaml
 
 from lxml.html import builder as B
-
+from readability_lxml import readability
 
 ORIGINAL_SUFFIX = '-orig.html'
 READABLE_SUFFIX = '-rdbl.html'
 RESULT_SUFFIX = '-result.html'
 
-TEST_DATA_PATH = 'test_data'
-TEST_OUTPUT_PATH = 'test_output'
+TESTDIR = os.path.dirname(__file__)
+TEST_DATA_PATH = os.path.join(TESTDIR, 'test_data')
+TEST_OUTPUT_PATH = os.path.join(TESTDIR, 'test_output')
 
 
 class ReadabilityTest:

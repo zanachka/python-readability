@@ -8,19 +8,23 @@ import argparse
 import errno
 import os
 import os.path
-import readability
 import sys
 import test
 import urllib2
 import yaml
 
+from readability_lxml import readability
+
+
 OVERWRITE_QUESTION = '%s exists; overwrite and continue (y/n)? '
+
 
 def y_or_n(question):
     while True:
         response = raw_input(question).strip()
         if len(response) > 0:
             return response[0] in ['y', 'Y']
+
 
 def write_file(test_name, suffix, data):
     path = os.path.join(test.TEST_DATA_PATH, test_name + suffix)

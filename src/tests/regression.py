@@ -135,6 +135,7 @@ def read_yaml(path):
 def make_path(dir_path, name, suffix):
     return os.path.join(dir_path, ''.join([name, suffix]))
 
+
 def make_readability_test(dir_path, name, spec_dict):
     if 'enabled' in spec_dict:
         enabled = spec_dict['enabled']
@@ -208,7 +209,7 @@ class ResultSummary():
 
 def make_summary_row(test, result):
     def data(suffix):
-        return os.path.join('..', TEST_DATA_PATH, test.name + suffix)
+        return os.path.abspath(os.path.join(TEST_DATA_PATH, test.name + suffix))
     def output(suffix):
         return test.name + suffix
     if test.enabled:

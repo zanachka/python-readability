@@ -1,6 +1,8 @@
+import os
 import unittest
 
 from helpers import load_regression_data
+from helpers import REGRESSION_DATA
 from readability_lxml.readability import Document
 from readability_lxml import readability as r
 from readability_lxml import urlfetch
@@ -143,13 +145,28 @@ class TestFindBaseUrl(unittest.TestCase):
         self._run_urls(specs)
 
 
+class TestMultiPageHelpers(unittest.TestCase):
+
+    def test_find_next_page_url(self):
+        """Verify we can find a next page url in the html body"""
+        html = """
+            <html><body><a href="/?page=2">2</a></body></html>
+        """
+        from lxml.html import document_fromstring
+        doc = document_fromstring(html)
+
+        res = r.find_next_page_url(set(), None, doc)
+        self.assertEqual('/?page=2', res,
+            'Should find out page 2 url in the body.')
+
+
 class TestFindNextPageLink(unittest.TestCase):
 
     def _test_page(self, url, html_path, expected):
         html = load_regression_data(html_path)
         doc = r.parse(html, url)
         parsed_urls = {url}
-        actual = r.find_next_page_link(parsed_urls, url, doc)
+        actual = r.find_next_page_url(parsed_urls, url, doc)
         self.assertEqual(expected, actual)
 
     def test_basic(self):
@@ -178,7 +195,8 @@ class TestMultiPage(unittest.TestCase):
     def _make_basic_urldict(self):
         url_fmt = 'http://basic.com/article.html?pagewanted=%s'
         file_fmt = 'basic-multi-page-%s.html'
-        pairs = [(url_fmt % i, file_fmt % i) for i in ['2', '3']]
+
+        pairs = [(url_fmt % i, os.path.join(REGRESSION_DATA, file_fmt % i)) for i in ['2', '3']]
         return dict(pairs)
 
     def test_basic(self):
@@ -187,7 +205,11 @@ class TestMultiPage(unittest.TestCase):
         fetcher = urlfetch.MockUrlFetch(urldict)
         options = {
                 'url': 'http://basic.com/article.html',
+                'multipage': True,
                 'urlfetch': fetcher
                 }
         doc = Document(html, **options)
-        doc.summary()
+        res = doc.summary()
+
+        self.assertIn('Page 2', res, 'Should find the page 2 heading')
+        self.assertIn('Page 3', res, 'Should find the page 3 heading')

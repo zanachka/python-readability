@@ -69,6 +69,7 @@ Optional `Document` keyword argument:
 - attributes:
 - debug: output debug messages
 - min_text_length:
+- multipage: should we try to parse and combine multiple page articles?
 - retry_length:
 - url: will allow adjusting links to be absolute
 

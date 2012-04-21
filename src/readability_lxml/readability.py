@@ -145,7 +145,7 @@ class Document:
     def short_title(self):
         return shorten_title(self.html)
 
-    def get_summary_with_metadata(self, enclose_with_html_tag=True):
+    def summary_with_metadata(self, enclose_with_html_tag=True):
         """Parse the input content and return a Summary object
 
         :param enclose_with_html_tag: Bool do you want a full <html> document

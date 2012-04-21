@@ -16,6 +16,11 @@ test: venv $(NOSE)
 $(NOSE):
 	$(PY) setup.py test
 
+.PHONY: regression_test
+regression_test:
+	$(PY) src/tests/regression.py unittest
+
+
 # #######
 # INSTALL
 # #######

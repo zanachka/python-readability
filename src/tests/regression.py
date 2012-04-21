@@ -95,7 +95,7 @@ def load_readability_tests(dir_path, files):
 
 def execute_test(test_data):
     doc = readability.Document(test_data.orig_html)
-    summary = doc.summary()
+    summary = doc.summary_with_metadata()
     benchmark_doc = (test_data.rdbl_html, 'benchmark')
     result_doc = (summary.html, 'result')
     # diff = lxml.html.diff.html_annotate([benchmark_doc, result_doc])

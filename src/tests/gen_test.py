@@ -4,24 +4,24 @@ test module.  It uses the current readability algorithm to capture a benchmark
 and construct a new test case.
 
 """
-from regression_test import (
-        TEST_DATA_PATH,
-        ORIGINAL_SUFFIX,
-        READABLE_SUFFIX,
-        YAML_EXTENSION,
-        adjust_url_map,
-        read_yaml
-        )
 import argparse
 import errno
 import os
 import os.path
-import sys
 import urllib2
 import yaml
 
 from readability_lxml import readability
 from readability_lxml import urlfetch
+
+from regression import (
+    TEST_DATA_PATH,
+    ORIGINAL_SUFFIX,
+    READABLE_SUFFIX,
+    YAML_EXTENSION,
+    adjust_url_map,
+    read_yaml
+    )
 
 
 OVERWRITE_QUESTION = '%s exists; overwrite and continue (y/n)? '

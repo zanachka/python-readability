@@ -9,7 +9,6 @@ import urlfetch
 from collections import namedtuple
 from lxml.etree import tostring
 from lxml.etree import tounicode
-from lxml.html.diff import htmldiff
 from lxml.html import document_fromstring
 from lxml.html import fragment_fromstring
 
@@ -448,7 +447,11 @@ def get_raw_article(candidates, best_candidate, enclose_with_html_tag=True):
                 # We don't want to append directly to output, but the div
                 # in html->body->div
                 if enclose_with_html_tag:
-                    output.getchildren()[0].getchildren()[0].append(sibling)
+                    if sibling.tag == 'body':
+                        for elem in sibling.getchildren():
+                            output.getchildren()[0].getchildren()[0].append(elem)
+                    else:
+                        output.getchildren()[0].getchildren()[0].append(sibling)
                 else:
                     output.append(sibling)
 
@@ -824,8 +827,20 @@ def append_next_page(parsed_urls, page_url, doc, options):
         # page_doc is a singular element containing the page article elements.  We
         # want to add its children to the main article document to which we are
         # appending a page.
-        for elem in page_doc:
-            doc.append(elem)
+        if doc.tag == 'html':
+            children = doc.getchildren()
+            if children[0].tag == 'head':
+                import ipdb; ipdb.set_trace()
+                for elem in page_doc:
+                    doc.getchildren()[1].append(elem)
+            else:
+                import ipdb; ipdb.set_trace()
+                for elem in page_doc:
+                    doc.getchildren()[0].append(elem)
+        else:
+            import ipdb; ipdb.set_trace()
+            for elem in page_doc:
+                doc.append(elem)
     if next_page_url is not None:
         append_next_page(parsed_urls, next_page_url, doc, options)
 

@@ -1,6 +1,9 @@
 import os
 import unittest
 
+from lxml.html import document_fromstring
+from lxml.html.diff import htmldiff
+
 from helpers import load_regression_data
 from helpers import REGRESSION_DATA
 from readability_lxml.readability import Document
@@ -209,7 +212,24 @@ class TestMultiPage(unittest.TestCase):
                 'urlfetch': fetcher
                 }
         doc = Document(html, **options)
-        res = doc.summary()
+        res = doc.summary_with_metadata()
 
-        self.assertIn('Page 2', res, 'Should find the page 2 heading')
-        self.assertIn('Page 3', res, 'Should find the page 3 heading')
+        self.assertIn('Page 2', res.html, 'Should find the page 2 heading')
+        self.assertIn('Page 3', res.html, 'Should find the page 3 heading')
+
+        expected_html = load_regression_data('basic-multi-page-expected.html')
+        diff_html = htmldiff(expected_html, res.html)
+        diff_doc = document_fromstring(diff_html)
+
+        insertions = diff_doc.xpath('//ins')
+        deletions = diff_doc.xpath('//del')
+
+        if len(insertions) != 0:
+            for i in insertions:
+                print('unexpected insertion: %s' % i.xpath('string()'))
+            self.fail('readability result does not match expected')
+
+        if len(deletions) != 0:
+            for i in deletions:
+                print('unexpected deletion: %s' % i.xpath('string()'))
+            self.fail('readability result does not match expected')

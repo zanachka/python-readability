@@ -4,7 +4,6 @@ import re
 import sys
 import urlparse
 
-from collections import defaultdict
 from collections import namedtuple
 from lxml.etree import tostring
 from lxml.etree import tounicode
@@ -232,8 +231,10 @@ def same_domain(lhs, rhs):
     else:
         return split_lhs.netloc == split_rhs.netloc
 
+
 def strip_trailing_slash(s):
     return re.sub(r'/$', '', s)
+
 
 def eval_possible_next_page_link(
         parsed_urls,
@@ -335,6 +336,7 @@ def eval_possible_next_page_link(
             candidate.score += max(0, 10 - link_text_as_int)
     except ValueError as e:
         pass
+
 
 def find_next_page_link(parsed_urls, url, elem):
     links = tags(elem, 'a')
@@ -813,26 +815,6 @@ class Document:
                     reason = ('<embed>s with too short content length, or too'
                         ' many <embed>s')
                     to_remove = True
-
-
-#                if el.tag == 'div' and counts['img'] >= 1 and to_remove:
-#                    imgs = el.findall('.//img')
-#                    valid_img = False
-#                    self.debug(tounicode(el))
-#                    for img in imgs:
-#
-#                        height = img.get('height')
-#                        text_length = img.get('text_length')
-#                        self.debug ("height %s text_length %s" %(repr(height), repr(text_length)))
-#                        if to_int(height) >= 100 or to_int(text_length) >= 100:
-#                            valid_img = True
-#                            self.debug("valid image" + tounicode(img))
-#                            break
-#                    if valid_img:
-#                        to_remove = False
-#                        self.debug("Allowing %s" %el.text_content())
-#                        for desnode in tags(el, "table", "ul", "div"):
-#                            allowed[desnode] = True
 
                     # don't really understand what this is doing. Originally
                     # the i/j were =+ which sets the value to 1. I think that

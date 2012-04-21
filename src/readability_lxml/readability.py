@@ -52,6 +52,11 @@ class Unparseable(ValueError):
     pass
 
 
+# We want to change over the Summary to a nametuple to be more memory
+# effecient and because it doesn't need to be mutable.
+Summary = namedtuple('Summary', ['html', 'confidence', 'title', 'short_title'])
+
+
 def describe(node, depth=1):
     if not hasattr(node, 'tag'):
         return "[%s]" % type(node)
@@ -88,9 +93,7 @@ def text_length(i):
     return len(clean(i.text_content() or ""))
 
 
-# We want to change over the Summary to a nametuple to be more memory
-# effecient and because it doesn't need to be mutable.
-Summary = namedtuple('Summary', ['html', 'confidence'])
+
 
 
 class Document:
@@ -221,7 +224,10 @@ class Document:
                     # Loop through and try again.
                     continue
                 else:
-                    return Summary(confidence=confidence, html=cleaned_article)
+                    return Summary(confidence=confidence,
+                        html=cleaned_article,
+                        short_title=self.short_title,
+                        title=self.title)
         except StandardError, e:
             log.exception('error getting summary: ')
             raise Unparseable(str(e)), None, sys.exc_info()[2]

@@ -42,8 +42,14 @@ class TestArticleOnly(unittest.TestCase):
         sample = load_sample('si-game.sample.html')
         doc = Document(sample, url='http://sportsillustrated.cnn.com/baseball/mlb/gameflash/2012/04/16/40630_preview.html')
         res = doc.summary_with_metadata(enclose_with_html_tag=False)
-        self.assertTrue(hasattr(res, 'html'), 'res should have an html attrib')
-        self.assertTrue(hasattr(res, 'confidence'), 'res should have an html attrib')
+        self.assertTrue(hasattr(res, 'html'),
+            'res should have an html attrib')
+        self.assertTrue(hasattr(res, 'confidence'),
+            'res should have an html attrib')
+        self.assertTrue(hasattr(res, 'title'),
+                'res should have an titile attrib')
+        self.assertTrue(hasattr(res, 'short_title'),
+            'res should have an short_title attrib')
         self.assertEqual('<div><div class="', res.html[0:17])
         self.assertTrue(res.confidence > 50,
             'The confidence score should be larger than 50: ' + str(res.confidence))

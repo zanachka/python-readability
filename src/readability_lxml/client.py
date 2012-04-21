@@ -14,7 +14,12 @@ def parse_args():
     parser.add_argument('-v', '--verbose',
         action='store_true',
         default=False,
-        help="Increase logging verbosity to DEBUG.")
+        help='Increase logging verbosity to DEBUG.')
+
+    parser.add_argument('-m', '--metadata',
+        action='store_true',
+        default=False,
+        help='print all metadata as well as content for the content')
 
     parser.add_argument('path', metavar='P', type=str, nargs=1,
         help="The url or file path to process in readable form.")
@@ -47,7 +52,14 @@ def main():
         doc = Document(target.read(),
             debug=args.verbose,
             url=url)
-        print doc.summary().encode(enc, 'replace')
+        if args.metadata:
+            m = doc.summary_with_metadata()
+            print m.title()
+            print m.short_title()
+            print m.confidence
+            print m.html.encode(enc, 'replace')
+        else:
+            print doc.summary().encode(enc, 'replace')
 
     finally:
         target.close()

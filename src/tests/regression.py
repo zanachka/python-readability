@@ -180,7 +180,7 @@ def execute_test(test_data):
         return None
     else:
         doc = readability.Document(test_data.orig_html)
-        summary = doc.summary()
+        summary = doc.summary_with_metadata()
         diff = lxml.html.diff.htmldiff(test_data.rdbl_html, summary.html)
         return ReadabilityTestResult(test_data, summary.html, diff)
 

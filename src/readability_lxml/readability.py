@@ -108,6 +108,7 @@ def tags(node, *tag_names):
         for e in node.findall('.//%s' % tag_name):
             yield e
 
+
 def class_weight(e):
     weight = 0
     if e.get('class', None):
@@ -125,6 +126,7 @@ def class_weight(e):
             weight += 25
 
     return weight
+
 
 def score_node(elem):
     content_score = class_weight(elem)
@@ -146,7 +148,8 @@ def score_node(elem):
 def transform_misused_divs_into_paragraphs(doc):
     for elem in tags(doc, 'div'):
         # transform <div>s that do not contain other block elements into <p>s
-        if not REGEXES['divToPElementsRe'].search(unicode(''.join(map(tostring, list(elem))))):
+        if not REGEXES['divToPElementsRe'].search(
+            unicode(''.join(map(tostring, list(elem))))):
             logging.debug("Altering %s to p" % (describe(elem)))
             elem.tag = "p"
             #print "Fixed element "+describe(elem)
@@ -166,11 +169,14 @@ def transform_misused_divs_into_paragraphs(doc):
                 p.text = child.tail
                 child.tail = None
                 elem.insert(pos + 1, p)
-                logging.debug("Inserted %s to %s" % (tounicode(p), describe(elem)))
+                logging.debug("Inserted %s to %s" % (
+                    tounicode(p),
+                    describe(elem)))
                 #print "Inserted "+tounicode(p)+" to "+describe(elem)
             if child.tag == 'br':
                 #print 'Dropped <br> at '+describe(elem)
                 child.drop_tree()
+
 
 def remove_unlikely_candidates(doc):
     for elem in doc.iter():
@@ -183,6 +189,7 @@ def remove_unlikely_candidates(doc):
                 ):
             logging.debug("Removing unlikely candidate - %s" % describe(elem))
             elem.drop_tree()
+
 
 def get_link_density(elem):
     link_length = 0
@@ -232,16 +239,22 @@ def score_paragraphs(doc, min_text_len):
         if grand_parent_node is not None:
             candidates[grand_parent_node]['content_score'] += content_score / 2.0
 
-    # Scale the final candidates score based on link density. Good content should have a
-    # relatively small link density (5% or less) and be mostly unaffected by this operation.
+    # Scale the final candidates score based on link density. Good content
+    # should have a relatively small link density (5% or less) and be mostly
+    # unaffected by this operation.
     for elem in ordered:
         candidate = candidates[elem]
         ld = get_link_density(elem)
         score = candidate['content_score']
-        logging.debug("Candid: %6.3f %s link density %.3f -> %6.3f" % (score, describe(elem), ld, score*(1-ld)))
+        logging.debug("Candid: %6.3f %s link density %.3f -> %6.3f" % (
+            score,
+            describe(elem),
+            ld,
+            score * (1 - ld)))
         candidate['content_score'] *= (1 - ld)
 
     return candidates
+
 
 def select_best_candidate(candidates):
     sorted_candidates = sorted(candidates.values(),
@@ -265,6 +278,7 @@ def reverse_tags(node, *tag_names):
     for tag_name in tag_names:
         for e in reversed(node.findall('.//%s' % tag_name)):
             yield e
+
 
 def sanitize(node, candidates, min_text_len):
     for header in tags(node, "h1", "h2", "h3", "h4", "h5", "h6"):
@@ -293,10 +307,11 @@ def sanitize(node, candidates, min_text_len):
         elif el.text_content().count(",") < 10:
             counts = {}
             for kind in ['p', 'img', 'li', 'a', 'embed', 'input']:
-                counts[kind] = len(el.findall('.//%s' %kind))
+                counts[kind] = len(el.findall('.//%s' % kind))
             counts["li"] -= 100
 
-            content_length = text_length(el) # Count the text length excluding any surrounding whitespace
+            # Count the text length excluding any surrounding whitespace
+            content_length = text_length(el)
             link_density = get_link_density(el)
             parent_node = el.getparent()
             if parent_node is not None:
@@ -347,13 +362,13 @@ def sanitize(node, candidates, min_text_len):
 
                 #find x non empty preceding and succeeding siblings
                 i, j = 0, 0
-                x  = 1
+                x = 1
                 siblings = []
                 for sib in el.itersiblings():
                     #logging.debug(sib.text_content())
                     sib_content_length = text_length(sib)
                     if sib_content_length:
-                        i =+ 1
+                        i += 1
                         siblings.append(sib_content_length)
                         if i == x:
                             break
@@ -361,12 +376,12 @@ def sanitize(node, candidates, min_text_len):
                     #logging.debug(sib.text_content())
                     sib_content_length = text_length(sib)
                     if sib_content_length:
-                        j =+ 1
+                        j += 1
                         siblings.append(sib_content_length)
                         if j == x:
                             break
                 #logging.debug(str(siblings))
-                if siblings and sum(siblings) > 1000 :
+                if siblings and sum(siblings) > 1000:
                     to_remove = False
                     logging.debug("Allowing %s" % describe(el))
                     for desnode in tags(el, "table", "ul", "div"):
@@ -388,9 +403,9 @@ def sanitize(node, candidates, min_text_len):
 
 
 def get_raw_article(candidates, best_candidate, enclose_with_html_tag=True):
-    # Now that we have the top candidate, look through its siblings for content that might also be related.
-    # Things like preambles, content split by ads that we removed, etc.
-
+    # Now that we have the top candidate, look through its siblings for
+    # content that might also be related. Things like preambles, content
+    # split by ads that we removed, etc.
     sibling_score_threshold = max([10, best_candidate['content_score'] * 0.2])
     if enclose_with_html_tag:
         output = document_fromstring('<div/>')
@@ -398,11 +413,12 @@ def get_raw_article(candidates, best_candidate, enclose_with_html_tag=True):
         output = fragment_fromstring('<div/>')
     best_elem = best_candidate['elem']
     for sibling in best_elem.getparent().getchildren():
-        #if isinstance(sibling, NavigableString): continue#in lxml there no concept of simple text
+        #if isinstance(sibling, NavigableString): continue#in lxml there no
+        # concept of simple text
         append = False
         if sibling is best_elem:
             append = True
-        sibling_key = sibling #HashableElement(sibling)
+        sibling_key = sibling  # HashableElement(sibling)
 
         # Print out sibling information for debugging.
         if sibling_key in candidates:
@@ -476,7 +492,7 @@ def get_article(doc, min_text_len, retry_len, enclose_with_html_tag=True):
             of_acceptable_length = len(cleaned_article or '') >= retry_len
             if ruthless and not of_acceptable_length:
                 ruthless = False
-                continue # try again
+                continue  # try again
             else:
                 return Summary(confidence=confidence,
                     html=cleaned_article,
@@ -484,8 +500,7 @@ def get_article(doc, min_text_len, retry_len, enclose_with_html_tag=True):
                     title=get_title(doc))
 
     except StandardError as e:
-        #logging.exception('error getting summary: ' + str(traceback.format_exception(*sys.exc_info())))
-        logging.exception('error getting summary: ' )
+        logging.exception('error getting summary: ')
         raise Unparseable(str(e)), None, sys.exc_info()[2]
 
 
@@ -533,6 +548,7 @@ def clean_segment_number(segments, index, segment):
     else:
         return segment
 
+
 def clean_segment_index(segments, index, segment):
     if index == (len(segments) - 1) and segment.lower() == 'index':
         return None
@@ -554,6 +570,7 @@ def clean_segment_short(segments, index, segment):
         return None
     else:
         return segment
+
 
 def clean_segment(segments, index, segment):
     """
@@ -613,6 +630,7 @@ class CandidatePage():
         self.href = href
         self.score = 0
 
+
 def same_domain(lhs, rhs):
     split_lhs = urlparse.urlsplit(lhs)
     split_rhs = urlparse.urlsplit(rhs)
@@ -624,6 +642,7 @@ def same_domain(lhs, rhs):
 
 def strip_trailing_slash(s):
     return re.sub(r'/$', '', s)
+
 
 def eval_href(parsed_urls, url, base_url, link):
     raw_href = link.get('href')
@@ -644,12 +663,14 @@ def eval_href(parsed_urls, url, base_url, link):
 
     return raw_href, href, True
 
+
 def eval_link_text(link):
     link_text = clean(link.text_content() or '')
     if REGEXES['extraneous'].search(link_text) or len(link_text) > 25:
         return link_text, False
     else:
         return link_text, True
+
 
 def find_or_create_page(candidates, href, link_text):
     '''
@@ -665,6 +686,7 @@ def find_or_create_page(candidates, href, link_text):
         candidate = CandidatePage(link_text, href)
         candidates[href] = candidate
         return candidate, True
+
 
 def eval_possible_next_page_link(
             parsed_urls, url, base_url, candidates, link):

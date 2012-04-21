@@ -150,7 +150,7 @@ class TestMultiPageHelpers(unittest.TestCase):
     def test_find_next_page_url(self):
         """Verify we can find a next page url in the html body"""
         html = """
-            <html><body><a href="/?page=2">2</a></body></html>
+            <html><body><a href="/?page=2">next</a></body></html>
         """
         from lxml.html import document_fromstring
         doc = document_fromstring(html)

@@ -27,7 +27,6 @@ log = logging.getLogger()
 
 
 REGEXES = {
-<<<<<<< HEAD:src/readability_lxml/readability.py
     'unlikelyCandidatesRe': re.compile(
         ('combx|comment|community|disqus|extra|foot|header|menu|remark|rss|'
         'shoutbox|sidebar|sponsor|ad-break|agegate|pagination|pager|popup|'

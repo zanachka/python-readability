@@ -28,14 +28,14 @@ class TestArticleOnly(unittest.TestCase):
             sample,
             url='http://sportsillustrated.cnn.com/baseball/mlb/gameflash/2012/04/16/40630_preview.html')
         res = doc.summary()
-        self.assertEqual('<html><body><div><div class', res[0:27])
+        self.assertEqual('<html><body id="page"><div><div class', res[0:37])
 
     def test_si_sample_html_partial(self):
         """Using the si sample, make sure we can get the article alone."""
         sample = load_sample('si-game.sample.html')
         doc = Document(sample, url='http://sportsillustrated.cnn.com/baseball/mlb/gameflash/2012/04/16/40630_preview.html')
         res = doc.summary(enclose_with_html_tag=False)
-        self.assertEqual('<div><div class="', res[0:17])
+        self.assertEqual('<div id="page"><div class="', res[0:27])
 
     def test_si_sample_full_summary(self):
         """We should parse the doc and get a full summary with confidence"""
@@ -50,7 +50,6 @@ class TestArticleOnly(unittest.TestCase):
                 'res should have an titile attrib')
         self.assertTrue(hasattr(res, 'short_title'),
             'res should have an short_title attrib')
-        self.assertEqual('<div><div class="', res.html[0:17])
+        self.assertEqual('<div id="page"><div class="', res.html[0:27])
         self.assertTrue(res.confidence > 50,
             'The confidence score should be larger than 50: ' + str(res.confidence))
-

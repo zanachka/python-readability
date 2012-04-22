@@ -59,10 +59,11 @@ def norm_title(title):
 
 
 def get_title(doc):
-    title = doc.find('.//title').text
-    if not title:
-        return '[no-title]'
+    title_node = doc.find('.//title')
 
+    if not title_node:
+        return '[no-title]'
+    title = title_node.text
     return norm_title(title)
 
 
@@ -74,10 +75,11 @@ def add_match(collection, text, orig):
 
 
 def shorten_title(doc):
-    title = doc.find('.//title').text
-    if not title:
+    title_node = doc.find('.//title')
+    if not title_node:
         return ''
 
+    title = title_node.text
     title = orig = norm_title(title)
 
     candidates = set()

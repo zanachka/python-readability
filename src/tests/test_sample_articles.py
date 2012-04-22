@@ -20,5 +20,5 @@ def process_article(article):
     sample = load_sample(article)
     doc = Document(sample)
     res = doc.summary()
-    failed_msg = "Failed to process the article: " + article
-    assert '<html><body><div><div class' == res[0:27], failed_msg
+    failed_msg = "Failed to process the article: " + res[0:37]
+    assert '<html><body id="page"><div><div class' == res[0:37], failed_msg

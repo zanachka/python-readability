@@ -233,3 +233,21 @@ class TestMultiPage(unittest.TestCase):
             for i in deletions:
                 print('unexpected deletion: %s' % i.xpath('string()'))
             self.fail('readability result does not match expected')
+
+
+class TestIsSuspectedDuplicate(unittest.TestCase):
+
+    def setUp(self):
+        super(TestIsSuspectedDuplicate, self).setUp()
+        html = load_regression_data('duplicate-page-article.html')
+        self._article = r.fragment_fromstring(html)
+
+    def test_unique(self):
+        html = load_regression_data('duplicate-page-unique.html')
+        page = r.fragment_fromstring(html)
+        self.assertFalse(r.is_suspected_duplicate(self._article, page))
+
+    def test_duplicate(self):
+        html = load_regression_data('duplicate-page-duplicate.html')
+        page = r.fragment_fromstring(html)
+        self.assertTrue(r.is_suspected_duplicate(self._article, page))

@@ -1,48 +1,58 @@
 import re
 import chardet
+import logging
+
+log = logging.getLogger('readbility.encoding')
+
+
+RE_CHARSET = re.compile(r'<meta.*?charset=["\']*(.+?)["\'>]', re.I)
+RE_PRAGMA = re.compile(r'<meta.*?content=["\']*;?charset=(.+?)["\'>]', re.I)
+RE_XML = re.compile(r'^<\?xml.*?encoding=["\']*(.+?)["\'>]')
+
+CHARSETS = {
+    'big5': 'big5hkscs',
+    'gb2312': 'gb18030',
+    'ascii': 'utf-8',
+    'MacCyrillic': 'cp1251',
+}
+
+
+def fix_charset(encoding):
+    """Overrides encoding when charset declaration
+       or charset determination is a subset of a larger
+       charset.  Created because of issues with Chinese websites"""
+    encoding = encoding.lower()
+    return CHARSETS.get(encoding, encoding)
+
 
 def get_encoding(page):
-    # Regex for XML and HTML Meta charset declaration
-    charset_re = re.compile(r'<meta.*?charset=["\']*(.+?)["\'>]', flags=re.I)
-    pragma_re = re.compile(r'<meta.*?content=["\']*;?charset=(.+?)["\'>]', flags=re.I)
-    xml_re = re.compile(r'^<\?xml.*?encoding=["\']*(.+?)["\'>]')
+    declared_encodings = (RE_CHARSET.findall(page) +
+                          RE_PRAGMA.findall(page) +
+                          RE_XML.findall(page))
 
-    declared_encodings = (charset_re.findall(page) +
-            pragma_re.findall(page) +
-            xml_re.findall(page))
+    log.debug("Document has the following encodings: %s" % declared_encodings)
 
-    # Try any declared encodings
-    if len(declared_encodings) > 0:
-        for declared_encoding in declared_encodings:
-            try:
-                page.decode(custom_decode(declared_encoding))
-                return custom_decode(declared_encoding)
-            except UnicodeDecodeError:
-                pass
+    # Try declared encodings, if any
+    for declared_encoding in declared_encodings:
+        encoding = fix_charset(declared_encoding)
+        try:
+            page.decode(encoding)
+            log.info('Using encoding "%s"' % encoding)
+            return encoding
+        except UnicodeDecodeError:
+            log.info('Encoding "%s", specified in the document as "%s" '
+                     'didn\'t work' % (encoding, declared_encoding))
+            print "Content encoding didn't work:", encoding
 
     # Fallback to chardet if declared encodings fail
     text = re.sub('</?[^>]*>\s*', ' ', page)
     enc = 'utf-8'
     if not text.strip() or len(text) < 10:
-        return enc # can't guess
+        log.debug("Can't guess encoding because text is too short")
+        return enc
     res = chardet.detect(text)
-    enc = res['encoding']
+    enc = fix_charset(res['encoding'])
+    log.info('Trying encoding "%s" guessed '
+             'with confidence %.2f' % (enc, res['confidence']))
     #print '->', enc, "%.2f" % res['confidence']
-    enc = custom_decode(enc)
     return enc
-
-def custom_decode(encoding):
-    """Overrides encoding when charset declaration
-       or charset determination is a subset of a larger
-       charset.  Created because of issues with Chinese websites"""
-    encoding = encoding.lower()
-    alternates = {
-        'big5': 'big5hkscs',
-        'gb2312': 'gb18030',
-        'ascii': 'utf-8',
-        'MacCyrillic': 'cp1251',
-    }
-    if encoding in alternates:
-        return alternates[encoding]
-    else:
-        return encoding

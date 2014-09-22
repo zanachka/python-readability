@@ -435,6 +435,7 @@ class Document:
                 for kind in ['p', 'img', 'li', 'a', 'embed', 'input']:
                     counts[kind] = len(el.findall('.//%s' % kind))
                 counts["li"] -= 100
+                counts["input"] -= len(el.findall('.//input[@type="hidden"]'))
 
                 # Count the text length excluding any surrounding whitespace
                 content_length = text_length(el)
@@ -590,6 +591,9 @@ def main():
     parser.add_option('-b', '--browser', default=None, action='store_true', help="open in browser")
     parser.add_option('-l', '--log', default=None, help="use filename for logs (appended)")
     parser.add_option('-u', '--url', default=None, help="use URL instead of a local file")
+    parser.add_option('-s', '--show-xpath', default=None, help="show xpath")
+    parser.add_option('-x', '--xpath', default=None, help="use xpath")
+    parser.add_option('-t', '--support-text', default=None, help="use this support text")
     parser.add_option('-p', '--positive-keywords', default=None, help="positive keywords (separated with comma)", action='store')
     parser.add_option('-n', '--negative-keywords', default=None, help="negative keywords (separated with comma)", action='store')
     (options, args) = parser.parse_args()

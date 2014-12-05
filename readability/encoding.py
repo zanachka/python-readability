@@ -13,7 +13,10 @@ CHARSETS = {
     'big5': 'big5hkscs',
     'gb2312': 'gb18030',
     'ascii': 'utf-8',
-    'MacCyrillic': 'cp1251',
+    'maccyrillic': 'cp1251',
+    'win1251': 'cp1251',
+    'win-1251': 'cp1251',
+    'windows-1251': 'cp1251',
 }
 
 

@@ -2,7 +2,7 @@ import re
 import chardet
 import logging
 
-log = logging.getLogger('readbility.encoding')
+log = logging.getLogger(__name__)
 
 
 RE_CHARSET = re.compile(r'<meta.*?charset=["\']*(.+?)["\'>]', re.I)

@@ -8,16 +8,17 @@ from lxml.etree import tounicode
 from lxml.html import document_fromstring
 from lxml.html import fragment_fromstring
 
-from cleaners import clean_attributes
-from cleaners import html_cleaner
-from htmls import build_doc
-from htmls import get_body
-from htmls import get_title
-from htmls import shorten_title
+from .cleaners import clean_attributes
+from .cleaners import html_cleaner
+from .htmls import build_doc
+from .htmls import get_body
+from .htmls import get_title
+from .htmls import shorten_title
 from encoding import get_encoding
 from debug import describe, text_content, open_in_browser
 
 log = logging.getLogger('readbility.readability')
+StandardError = Exception in python3
 
 REGEXES = {
     'unlikelyCandidatesRe': re.compile('combx|comment|community|disqus|extra|foot|header|menu|remark|rss|shoutbox|sidebar|sponsor|ad-break|agegate|pagination|pager|popup|tweet|twitter', re.I),
@@ -68,7 +69,8 @@ def compile_pattern(elements):
         return None
     if isinstance(elements, regexp_type):
         return elements
-    if isinstance(elements, basestring):
+
+    if isinstance(elements, _basestring):
         elements = elements.split(',')
     return re.compile(u'|'.join([re.escape(x.lower()) for x in elements]), re.U)
 
@@ -78,7 +80,8 @@ class Document:
     TEXT_LENGTH_THRESHOLD = 25
     RETRY_LENGTH = 250
 
-    def __init__(self, input, positive_keywords=None, negative_keywords=None, **options):
+    def __init__(self, input, positive_keywords=None, negative_keywords=None,
+                 **options):
         """Generate the document
 
         :param input: string of the html content.
@@ -88,8 +91,11 @@ class Document:
             - min_text_length:
             - retry_length:
             - url: will allow adjusting links to be absolute
-            - positive_keywords: the list of positive search patterns in classes and ids, for example: ["news-item", "block"]
-            - negative_keywords: the list of negative search patterns in classes and ids, for example: ["mysidebar", "related", "ads"]
+            - positive_keywords: the list of positive search patterns in
+                classes and ids, for example: ["news-item", "block"]
+            - negative_keywords: the list of negative
+                search patterns in classes
+                and ids, for example: ["mysidebar", "related", "ads"]
             Also positive_keywords and negative_keywords could be a regexp.
         """
         self.input = input
@@ -184,7 +190,7 @@ class Document:
                     continue
                 else:
                     return cleaned_article
-        except StandardError, e:
+        except StandardError as e:
             log.exception('error getting summary: ')
             raise Unparseable(str(e)), None, sys.exc_info()[2]
 
@@ -208,7 +214,9 @@ class Document:
             if sibling is best_elem:
                 append = True
             sibling_key = sibling  # HashableElement(sibling)
-            if sibling_key in candidates and candidates[sibling_key]['content_score'] >= sibling_score_threshold:
+            if sibling_key in candidates and \
+                    candidates[sibling_key]['content_score'] >= \
+                    sibling_score_threshold:
                 append = True
 
             if sibling.tag == "p":
@@ -218,30 +226,37 @@ class Document:
 
                 if node_length > 80 and link_density < 0.25:
                     append = True
-                elif node_length <= 80 and link_density == 0 and re.search('\.( |$)', node_content):
+                elif node_length <= 80 \
+                        and link_density == 0 \
+                        and re.search('\.( |$)', node_content):
                     append = True
 
             if append:
-                # We don't want to append directly to output, but to the div
+                # We don't want to append directly to output, but the div
                 # in html->body->div
                 if html_partial:
                     output.append(sibling)
                 else:
                     output.getchildren()[0].getchildren()[0].append(sibling)
-        #if output is not None:
-        #    output.append(best_elem)
+        # if output is not None:
+        # output.append(best_elem)
         return output
 
     def select_best_candidate(self, candidates):
         if not candidates:
             return None
 
-        sorted_candidates = sorted(candidates.values(), key=lambda x: x['content_score'], reverse=True)
+        sorted_candidates = sorted(
+            candidates.values(),
+            key=lambda x: x['content_score'],
+            reverse=True
+        )
+
         for candidate in sorted_candidates[:5]:
             elem = candidate['elem']
-            log.info("Top 5 : %6.3f %s: %s" % (
+            log.info("Top 5 : %6.3f %s" % (
                 candidate['content_score'],
-                describe(elem), text_content(elem)))
+                describe(elem)))
 
         best_candidate = sorted_candidates[0]
         return best_candidate
@@ -279,7 +294,8 @@ class Document:
                 candidates[parent_node] = self.score_node(parent_node)
                 ordered.append(parent_node)
 
-            if grand_parent_node is not None and grand_parent_node not in candidates:
+            if grand_parent_node is not None and \
+                grand_parent_node not in candidates:
                 candidates[grand_parent_node] = self.score_node(
                     grand_parent_node)
                 ordered.append(grand_parent_node)
@@ -318,16 +334,20 @@ class Document:
                 if REGEXES['positiveRe'].search(feature):
                     weight += 25
 
-                if self.positive_keywords and self.positive_keywords.search(feature):
+                if self.positive_keywords and self.positive_keywords.search(
+                        feature):
                     weight += 25
 
-                if self.negative_keywords and self.negative_keywords.search(feature):
+                if self.negative_keywords and self.negative_keywords.search(
+                        feature):
                     weight -= 25
 
-        if self.positive_keywords and self.positive_keywords.match('tag-' + e.tag):
+        if self.positive_keywords and self.positive_keywords.match(
+                'tag-' + e.tag):
             weight += 25
 
-        if self.negative_keywords and self.negative_keywords.match('tag-' + e.tag):
+        if self.negative_keywords and self.negative_keywords.match(
+                'tag-' + e.tag):
             weight -= 25
 
         return weight
@@ -365,15 +385,15 @@ class Document:
         for elem in self.tags(self.html, 'div'):
             # transform <div>s that do not contain other block elements into
             # <p>s
-            #FIXME: The current implementation ignores all descendants that
+            # FIXME: The current implementation ignores all descendants that
             # are not direct children of elem
             # This results in incorrect results in case there is an <img>
             # buried within an <a> for example
             if not REGEXES['divToPElementsRe'].search(
                     unicode(''.join(map(tostring, list(elem))))):
-                #self.debug("Altering %s to p" % describe(elem))
+                # self.debug("Altering %s to p" % describe(elem))
                 elem.tag = "p"
-                #self.debug("Fixed element "+describe(elem))
+                # self.debug("Fixed element "+describe(elem))
 
         for elem in self.tags(self.html, 'div'):
             if elem.text and elem.text.strip():
@@ -381,7 +401,7 @@ class Document:
                 p.text = elem.text
                 elem.text = None
                 elem.insert(0, p)
-                #print "Appended "+tounicode(p)+" to "+describe(elem)
+                # print "Appended "+tounicode(p)+" to "+describe(elem)
 
             for pos, child in reversed(list(enumerate(elem))):
                 if child.tail and child.tail.strip():
@@ -389,9 +409,9 @@ class Document:
                     p.text = child.tail
                     child.tail = None
                     elem.insert(pos + 1, p)
-                    #print "Inserted "+tounicode(p)+" to "+describe(elem)
+                    # print "Inserted "+tounicode(p)+" to "+describe(elem)
                 if child.tag == 'br':
-                    #print 'Dropped <br> at '+describe(elem)
+                    # print 'Dropped <br> at '+describe(elem)
                     child.drop_tree()
 
     def tags(self, node, *tag_names):
@@ -407,7 +427,8 @@ class Document:
     def sanitize(self, node, candidates):
         MIN_LEN = self.options.get('min_text_length', self.TEXT_LENGTH_THRESHOLD)
         for header in self.tags(node, "h1", "h2", "h3", "h4", "h5", "h6"):
-            if self.class_weight(header) < 0 or self.get_link_density(header) > 0.33:
+            if self.class_weight(header) < 0 or \
+                    self.get_link_density(header) > 0.33:
                 header.drop_tree()
 
         for elem in self.tags(node, "form", "iframe", "textarea"):
@@ -421,7 +442,7 @@ class Document:
             weight = self.class_weight(el)
             if el in candidates:
                 content_score = candidates[el]['content_score']
-                #print '!',el, '-> %6.3f' % content_score
+                # print '!',el, '-> %6.3f' % content_score
             else:
                 content_score = 0
             tag = el.tag
@@ -443,24 +464,26 @@ class Document:
                 parent_node = el.getparent()
                 if parent_node is not None:
                     if parent_node in candidates:
-                        content_score = candidates[parent_node]['content_score']
+                        content_score = candidates[
+                            parent_node]['content_score']
                     else:
                         content_score = 0
-                #if parent_node is not None:
-                    #pweight = self.class_weight(parent_node) + content_score
-                    #pname = describe(parent_node)
-                #else:
-                    #pweight = 0
-                    #pname = "no parent"
+                # if parent_node is not None:
+                    # pweight = self.class_weight(parent_node) + content_score
+                    # pname = describe(parent_node)
+                # else:
+                    # pweight = 0
+                    # pname = "no parent"
                 to_remove = False
                 reason = ""
 
-                #if el.tag == 'div' and counts["img"] >= 1:
-                #    continue
+                # if el.tag == 'div' and counts["img"] >= 1:
+                # continue
                 if content_length and counts["img"] * 100 >= content_length:
                     reason = "too many images (%s) for text " % counts["img"]
                     to_remove = True
-                elif counts["li"] > counts["p"] and tag != "ul" and tag != "ol":
+                elif counts["li"] > counts["p"] \
+                        and tag != "ul" and tag != "ol":
                     reason = "more <li>s than <p>s"
                     to_remove = True
                 elif counts["input"] > (counts["p"] / 3):
@@ -544,7 +567,7 @@ class Document:
 
         for el in ([node] + [n for n in node.iter()]):
             if not self.options.get('attributes', None):
-                #el.attrib = {} #FIXME:Checkout the effects of disabling this
+                # el.attrib = {} #FIXME:Checkout the effects of disabling this
                 pass
 
         self.html = node
@@ -612,7 +635,8 @@ def main():
         file = urllib.urlopen(options.url)
     else:
         file = open(args[0], 'rt')
-    output_encoding = sys.__stdout__.encoding or 'utf-8'  # XXX: a hack, better set PYTHONIOENCODING explicitly
+    output_encoding = sys.__stdout__.encoding or 'utf-8'
+    # XXX: a hack, better set PYTHONIOENCODING explicitly
     html = file.read()  # bytes object
     encoding = get_encoding(html)
     html = html.decode(encoding)

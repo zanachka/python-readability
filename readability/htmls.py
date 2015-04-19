@@ -5,7 +5,7 @@ import logging
 import lxml.html
 import re
 
-log = logging.getLogger('readability.htmls')
+log = logging.getLogger(__name__)
 
 utf8_parser = lxml.html.HTMLParser(encoding='utf-8')
 

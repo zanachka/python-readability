@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import logging
 import re
 import sys
@@ -20,6 +21,8 @@ from .htmls import shorten_title
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
 
+if sys.version_info[0] == 2:
+    str = unicode
 
 REGEXES = {
     'unlikelyCandidatesRe': re.compile('combx|comment|community|disqus|extra|foot|header|menu|remark|rss|shoutbox|sidebar|sponsor|ad-break|agegate|pagination|pager|popup|tweet|twitter', re.I),
@@ -81,11 +84,12 @@ regexp_type = type(re.compile('hello, world'))
 def compile_pattern(elements):
     if not elements:
         return None
-    if isinstance(elements, regexp_type):
+    elif isinstance(elements, regexp_type):
         return elements
-    if isinstance(elements, basestring):
+    else:
+        # assume string or string like object
         elements = elements.split(',')
-    return re.compile(u'|'.join([re.escape(x.lower()) for x in elements]), re.U)
+        return re.compile('|'.join([re.escape(x.lower()) for x in elements]), re.U)
 
 class Document:
     """Class to build a etree document out of html."""
@@ -195,9 +199,20 @@ class Document:
                     continue
                 else:
                     return cleaned_article
-        except StandardError, e:
+        except Exception as e:
             log.exception('error getting summary: ')
-            raise Unparseable(str(e)), None, sys.exc_info()[2]
+            if sys.version_info[0] == 2:
+                # This is the only reason why we can't support Python 3.3:
+                # 3.3s parser fails to accept the old syntax (although this
+                # code never runs) which would require write this line as:
+                # write this line as
+                #    Unparseable(str(e))
+                # but then we loose the traceback information. 3.4 on the
+                # other hand accepts the old syntax and would only complain
+                # at runtime.
+                raise Unparseable(str(e)), None, sys.exc_info()[2]
+            else:
+                raise Unparseable(str(e)).with_traceback(sys.exc_info()[2])
 
     def get_article(self, candidates, best_candidate, html_partial=False):
         # Now that we have the top candidate, look through its siblings for
@@ -247,7 +262,7 @@ class Document:
         return output
 
     def select_best_candidate(self, candidates):
-        sorted_candidates = sorted(candidates.values(), key=lambda x: x['content_score'], reverse=True)
+        sorted_candidates = sorted(list(candidates.values()), key=lambda x: x['content_score'], reverse=True)
         for candidate in sorted_candidates[:5]:
             elem = candidate['elem']
             self.debug("Top 5 : %6.3f %s" % (
@@ -388,7 +403,7 @@ class Document:
             # This results in incorrect results in case there is an <img>
             # buried within an <a> for example
             if not REGEXES['divToPElementsRe'].search(
-                    unicode(''.join(map(tostring, list(elem))))):
+                    str(''.join(map(str, map(tostring, list(elem)))))):
                 #self.debug("Altering %s to p" % (describe(elem)))
                 elem.tag = "p"
                 #print "Fixed element "+describe(elem)
@@ -609,18 +624,18 @@ def main():
 
     file = None
     if options.url:
-        import urllib
-        file = urllib.urlopen(options.url)
+        import urllib.request, urllib.parse, urllib.error
+        file = urllib.request.urlopen(options.url)
     else:
         file = open(args[0], 'rt')
     enc = sys.__stdout__.encoding or 'utf-8' # XXX: this hack could not always work, better to set PYTHONIOENCODING
     try:
-        print Document(file.read(),
+        print(Document(file.read(),
             debug=options.verbose,
             url=options.url,
             positive_keywords = options.positive_keywords,
             negative_keywords = options.negative_keywords,
-        ).summary().encode(enc, 'replace')
+        ).summary().encode(enc, 'replace'))
     finally:
         file.close()
 

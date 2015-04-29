@@ -89,7 +89,7 @@ def compile_pattern(elements):
     else:
         # assume string or string like object
         elements = elements.split(',')
-        return re.compile('|'.join([re.escape(x.lower()) for x in elements]), re.U)
+        return re.compile(u'|'.join([re.escape(x.lower()) for x in elements]), re.U)
 
 class Document:
     """Class to build a etree document out of html."""
@@ -207,7 +207,7 @@ class Document:
                 # code never runs) which would require write this line as:
                 # write this line as
                 #    Unparseable(str(e))
-                # but then we loose the traceback information. 3.4 on the
+                # but then we lose the traceback information. 3.4 on the
                 # other hand accepts the old syntax and would only complain
                 # at runtime.
                 raise Unparseable(str(e)), None, sys.exc_info()[2]
@@ -262,7 +262,7 @@ class Document:
         return output
 
     def select_best_candidate(self, candidates):
-        sorted_candidates = sorted(list(candidates.values()), key=lambda x: x['content_score'], reverse=True)
+        sorted_candidates = sorted(candidates.values(), key=lambda x: x['content_score'], reverse=True)
         for candidate in sorted_candidates[:5]:
             elem = candidate['elem']
             self.debug("Top 5 : %6.3f %s" % (

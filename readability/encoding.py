@@ -3,9 +3,9 @@ import chardet
 
 def get_encoding(page):
     # Regex for XML and HTML Meta charset declaration
-    charset_re = re.compile(r'<meta.*?charset=["\']*(.+?)["\'>]', flags=re.I)
-    pragma_re = re.compile(r'<meta.*?content=["\']*;?charset=(.+?)["\'>]', flags=re.I)
-    xml_re = re.compile(r'^<\?xml.*?encoding=["\']*(.+?)["\'>]')
+    charset_re = re.compile(br'<meta.*?charset=["\']*(.+?)["\'>]', flags=re.I)
+    pragma_re = re.compile(br'<meta.*?content=["\']*;?charset=(.+?)["\'>]', flags=re.I)
+    xml_re = re.compile(br'^<\?xml.*?encoding=["\']*(.+?)["\'>]')
 
     declared_encodings = (charset_re.findall(page) +
             pragma_re.findall(page) +
@@ -21,7 +21,7 @@ def get_encoding(page):
                 pass
 
     # Fallback to chardet if declared encodings fail
-    text = re.sub('</?[^>]*>\s*', ' ', page)
+    text = re.sub(b'</?[^>]*>\s*', b' ', page)
     enc = 'utf-8'
     if not text.strip() or len(text) < 10:
         return enc # can't guess

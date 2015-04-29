@@ -202,17 +202,10 @@ class Document:
         except Exception as e:
             log.exception('error getting summary: ')
             if sys.version_info[0] == 2:
-                # This is the only reason why we can't support Python 3.3:
-                # 3.3s parser fails to accept the old syntax (although this
-                # code never runs) which would require write this line as:
-                # write this line as
-                #    Unparseable(str(e))
-                # but then we lose the traceback information. 3.4 on the
-                # other hand accepts the old syntax and would only complain
-                # at runtime.
-                raise Unparseable(str(e)), None, sys.exc_info()[2]
+                from .compat.two import raise_with_traceback
             else:
-                raise Unparseable(str(e)).with_traceback(sys.exc_info()[2])
+                from .compat.three import raise_with_traceback
+            raise_with_traceback(Unparseable, sys.exc_info()[2], str(e))
 
     def get_article(self, candidates, best_candidate, html_partial=False):
         # Now that we have the top candidate, look through its siblings for

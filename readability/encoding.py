@@ -1,5 +1,6 @@
 import re
 import chardet
+import sys
 
 def get_encoding(page):
     # Regex for XML and HTML Meta charset declaration
@@ -12,13 +13,18 @@ def get_encoding(page):
             xml_re.findall(page))
 
     # Try any declared encodings
-    if len(declared_encodings) > 0:
-        for declared_encoding in declared_encodings:
-            try:
-                page.decode(custom_decode(declared_encoding))
-                return custom_decode(declared_encoding)
-            except UnicodeDecodeError:
-                pass
+    for declared_encoding in declared_encodings:
+        try:
+            if sys.version_info[0] == 3:
+                # declared_encoding will actually be bytes but .decode() only
+                # accepts `str` type. Decode blindly with ascii because no one should
+                # ever use non-ascii characters in the name of an encoding.
+                declared_encoding = declared_encoding.decode('ascii', 'replace')
+
+            page.decode(custom_decode(declared_encoding))
+            return custom_decode(declared_encoding)
+        except UnicodeDecodeError:
+            pass
 
     # Fallback to chardet if declared encodings fail
     text = re.sub(b'</?[^>]*>\s*', b' ', page)

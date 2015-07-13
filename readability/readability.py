@@ -17,7 +17,6 @@ from .htmls import get_title
 from .htmls import shorten_title
 
 
-logging.basicConfig(level=logging.INFO)
 log = logging.getLogger()
 
 
@@ -597,6 +596,8 @@ class HashableElement():
 
 
 def main():
+    logging.basicConfig(level=logging.INFO)
+
     from optparse import OptionParser
     parser = OptionParser(usage="%prog: [options] [file]")
     parser.add_option('-v', '--verbose', action='store_true')

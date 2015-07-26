@@ -34,6 +34,9 @@ Command-line usage::
 
     python -m readability.readability -u http://pypi.python.org/pypi/readability-lxml
 
+To open resulting page in browser::
+
+    python -m readability.readability -b -u http://pypi.python.org/pypi/readability-lxml
 
 Using positive/negative keywords example::
 
@@ -56,3 +59,4 @@ Updates
  - 0.3 Added Document.encoding, positive_keywords and negative_keywords
  - 0.4 Added Videos loading and allowed more images per paragraph
  - 0.5 Preparing a release to support Python versions 2.6, 2.7, 3.3 and 3.4
+ - 0.6 Finally a release which supports Python versions 2.6, 2.7, 3.3 and 3.4

@@ -45,7 +45,6 @@ def get_encoding(page):
         except UnicodeDecodeError:
             log.info('Encoding "%s", specified in the document as "%s" '
                      'didn\'t work' % (encoding, declared_encoding))
-            print "Content encoding didn't work:", encoding
 
     # Fallback to chardet if declared encodings fail
     text = re.sub('</?[^>]*>\s*', ' ', page)

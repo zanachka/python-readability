@@ -17,8 +17,7 @@ from .htmls import shorten_title
 from encoding import get_encoding
 from debug import describe, text_content, open_in_browser
 
-log = logging.getLogger('readbility.readability')
-StandardError = Exception in python3
+log = logging.getLogger(__file__)
 
 REGEXES = {
     'unlikelyCandidatesRe': re.compile('combx|comment|community|disqus|extra|foot|header|menu|remark|rss|shoutbox|sidebar|sponsor|ad-break|agegate|pagination|pager|popup|tweet|twitter', re.I),
@@ -190,7 +189,7 @@ class Document:
                     continue
                 else:
                     return cleaned_article
-        except StandardError as e:
+        except Exception as e:
             log.exception('error getting summary: ')
             raise Unparseable(str(e)), None, sys.exc_info()[2]
 
@@ -635,9 +634,8 @@ def main():
         file = urllib.urlopen(options.url)
     else:
         file = open(args[0], 'rt')
-    output_encoding = sys.__stdout__.encoding or 'utf-8'
-    # XXX: a hack, better set PYTHONIOENCODING explicitly
     html = file.read()  # bytes object
+
     encoding = get_encoding(html)
     html = html.decode(encoding)
     try:
@@ -648,6 +646,9 @@ def main():
             result = 'Title: ' + doc.short_title() + '<br/>' + doc.summary()
             open_in_browser(result)
         else:
+		    # XXX: a hack, better to set PYTHONIOENCODING explicitly
+		    output_encoding = sys.__stdout__.encoding or 'utf-8'
+
             print 'Title:', doc.short_title().encode(output_encoding, 'replace')
             print doc.summary().encode(output_encoding, 'replace')
     finally:

@@ -14,7 +14,7 @@ if sys.platform == 'darwin':
 
 setup(
     name="readability-lxml",
-    version="0.6",
+    version="0.6.0.3",
     author="Yuri Baburov",
     author_email="burchik@gmail.com",
     description="fast python port of arc90's readability tool",
@@ -22,7 +22,7 @@ setup(
     long_description=open("README").read(),
     license="Apache License 2.0",
     url="http://github.com/buriy/python-readability",
-    packages=['readability'],
+    packages=['readability', 'readability.compat'],
     install_requires=[
         "chardet",
         lxml_requirement,
@@ -32,6 +32,17 @@ setup(
         "Environment :: Web Environment",
         "Intended Audience :: Developers",
         "Operating System :: OS Independent",
+        "Topic :: Text Processing :: Indexing",
+        "Topic :: Utilities",
+        "Topic :: Internet",
+        "Topic :: Software Development :: Libraries :: Python Modules",
         "Programming Language :: Python",
-        ],
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 2.6",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3.4",
+
+    ],
 )

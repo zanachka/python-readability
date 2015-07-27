@@ -14,10 +14,10 @@ if sys.platform == 'darwin':
 
 setup(
     name="readability-lxml",
-    version="0.6.0.4",
+    version="0.6.0.5",
     author="Yuri Baburov",
     author_email="burchik@gmail.com",
-    description="fast python port of arc90's readability tool",
+    description="fast html to text parser (article readability tool) with python3 support",
     test_suite = "tests.test_article_only",
     long_description=open("README").read(),
     license="Apache License 2.0",

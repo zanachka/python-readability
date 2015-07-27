@@ -110,7 +110,14 @@ class Document:
         doc = html_cleaner.clean_html(doc)
         base_href = self.url
         if base_href:
-            doc.make_links_absolute(base_href, resolve_base_href=True)
+            # trying to guard against bad links like <a href="http://[http://...">
+            try:
+                # such support is added in lxml 3.3.0
+                doc.make_links_absolute(base_href, resolve_base_href=True, handle_failures='discard')
+            except TypeError: #make_links_absolute() got an unexpected keyword argument 'handle_failures'
+                # then we have lxml < 3.3.0
+                # please upgrade to lxml >= 3.3.0 if you're failing here!
+                doc.make_links_absolute(base_href, resolve_base_href=True)
         else:
             doc.resolve_base_href()
         return doc

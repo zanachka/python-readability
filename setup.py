@@ -14,7 +14,7 @@ if sys.platform == 'darwin':
 
 setup(
     name="readability-lxml",
-    version="0.6.0.3",
+    version="0.6.0.4",
     author="Yuri Baburov",
     author_email="burchik@gmail.com",
     description="fast python port of arc90's readability tool",

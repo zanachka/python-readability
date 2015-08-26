@@ -20,7 +20,7 @@ from .compat import str_
 from .debug import describe, text_content
 
 
-log = logging.getLogger()
+log = logging.getLogger("readability.readability")
 
 REGEXES = {
     'unlikelyCandidatesRe': re.compile('combx|comment|community|disqus|extra|foot|header|menu|remark|rss|shoutbox|sidebar|sponsor|ad-break|agegate|pagination|pager|popup|tweet|twitter', re.I),

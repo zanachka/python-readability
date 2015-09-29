@@ -67,6 +67,8 @@ regexp_type = type(re.compile('hello, world'))
 def compile_pattern(elements):
     if not elements:
         return None
+    elif isinstance(elements, (list, tuple)):
+        return list(elements)
     elif isinstance(elements, regexp_type):
         return elements
     else:
@@ -78,7 +80,7 @@ class Document:
     """Class to build a etree document out of html."""
 
     def __init__(self, input, positive_keywords=None, negative_keywords=None,
-                 url=None, min_text_length=25, retry_length=250, ):
+                 url=None, min_text_length=25, retry_length=250, xpath=False):
         """Generate the document
 
         :param input: string of the html content.
@@ -99,10 +101,16 @@ class Document:
         self.url = url
         self.min_text_length = min_text_length
         self.retry_length = retry_length
+        self.xpath = xpath
 
     def _html(self, force=False):
         if force or self.html is None:
             self.html = self._parse(self.input)
+            if self.xpath:
+                root = self.html.getroottree()
+                for i in self.html.getiterator():
+                    #print root.getpath(i)
+                    i.attrib['x'] = root.getpath(i)
         return self.html
 
     def _parse(self, input):

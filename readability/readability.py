@@ -600,12 +600,15 @@ def main():
 
     file = None
     if options.url:
+        headers = {'User-Agent': 'Mozilla/5.0'}
         if sys.version_info[0] == 3:
             import urllib.request, urllib.parse, urllib.error
-            file = urllib.request.urlopen(options.url)
+            request = urllib.request.Request(options.url, None, headers)
+            file = urllib.request.urlopen(request)
         else:
             import urllib2
-            file = urllib2.urlopen(options.url)
+            request = urllib2.request(options.url, None, headers)
+            file = urllib2.urlopen(request)
     else:
         file = open(args[0], 'rt')
     try:

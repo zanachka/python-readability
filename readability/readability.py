@@ -607,7 +607,7 @@ def main():
             file = urllib.request.urlopen(request)
         else:
             import urllib2
-            request = urllib2.request(options.url, None, headers)
+            request = urllib2.Request(options.url, None, headers)
             file = urllib2.urlopen(request)
     else:
         file = open(args[0], 'rt')

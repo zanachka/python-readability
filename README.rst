@@ -1,3 +1,7 @@
+.. image:: https://travis-ci.org/buriy/python-readability.svg?branch=master
+    :target: https://travis-ci.org/buriy/python-readability
+
+
 python-readability
 ==================
 

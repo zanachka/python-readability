@@ -19,7 +19,7 @@ setup(
     author_email="burchik@gmail.com",
     description="fast html to text parser (article readability tool) with python3 support",
     test_suite = "tests.test_article_only",
-    long_description=open("README").read(),
+    long_description=open("README.rst").read(),
     license="Apache License 2.0",
     url="http://github.com/buriy/python-readability",
     packages=['readability', 'readability.compat'],

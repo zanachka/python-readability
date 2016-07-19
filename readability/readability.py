@@ -97,13 +97,13 @@ class Document:
             negative_keywords=["mysidebar", "related", "ads"]
 
         The Document class is not re-enterable.
-        You need to create a new Document() for each HTML file to process.
+        It is designed to create a new Document() for each HTML file to process it.
 
-        Provides four API methods:
-        .get_title()
-        .short_title()
-        .get_content()
-        .summary()
+        API methods:
+        .title() -- full title
+        .short_title() -- cleaned up title
+        .content() -- full content
+        .summary() -- cleaned up content
         """
         self.input = input
         self.html = None
@@ -143,7 +143,7 @@ class Document:
         return doc
 
     def content(self):
-        """Returns full document body"""
+        """Returns document body"""
         return get_body(self._html(True))
 
     def title(self):
@@ -168,8 +168,8 @@ class Document:
         :param html_partial: return only the div of the document, don't wrap
         in html and body tags.
 
-        Warning: It mangles internal DOM representation of the HTML document,
-        so always use other API methods before this one.
+        Warning: It mutates internal DOM representation of the HTML document,
+        so it is better to call other API methods before this one.
         """
         try:
             ruthless = True
@@ -395,7 +395,6 @@ class Document:
         }
 
     def remove_unlikely_candidates(self):
-        """Utility method"""
         for elem in self.html.iter():
             s = "%s %s" % (elem.get('class', ''), elem.get('id', ''))
             if len(s) < 2:
@@ -405,7 +404,6 @@ class Document:
                 elem.drop_tree()
 
     def transform_misused_divs_into_paragraphs(self):
-        """Utility method"""
         for elem in self.tags(self.html, 'div'):
             # transform <div>s that do not contain other block elements into
             # <p>s

@@ -86,12 +86,24 @@ class Document:
         :param input: string of the html content.
         :param positive_keywords: regex or list of patterns in classes and ids
         :param negative_keywords: regex or list of patterns in classes and ids
-        :param min_text_length: 
-        :param retry_length:
+        :param min_text_length: Tunable. Set to a higher value for more precise detection of longer texts.
+        :param retry_length: Tunable. Set to a lower value for better detection of very small texts.
+        :param xpath: If set to True, adds x="..." attribute to each HTML node,
+        containing xpath path pointing to original document path (allows to
+        reconstruct selected summary in original document).
         
         Example:
             positive_keywords=["news-item", "block"]
             negative_keywords=["mysidebar", "related", "ads"]
+
+        The Document class is not re-enterable.
+        You need to create a new Document() for each HTML file to process.
+
+        Provides four API methods:
+        .get_title()
+        .short_title()
+        .get_content()
+        .summary()
         """
         self.input = input
         self.html = None
@@ -131,23 +143,33 @@ class Document:
         return doc
 
     def content(self):
+        """Returns full document body"""
         return get_body(self._html(True))
 
     def title(self):
+        """Returns document title"""
         return get_title(self._html(True))
 
     def short_title(self):
+        """Returns cleaned up document title"""
         return shorten_title(self._html(True))
 
     def get_clean_html(self):
-         return clean_attributes(tounicode(self.html))
+        """
+        An internal method, which can be overridden in subclasses, for example,
+        to disable or to improve DOM-to-text conversion in .summary() method
+        """
+        return clean_attributes(tounicode(self.html))
 
     def summary(self, html_partial=False):
-        """Generate the summary of the html docuemnt
+        """
+        Given a HTML file, extracts the text of the article.
 
         :param html_partial: return only the div of the document, don't wrap
         in html and body tags.
 
+        Warning: It mangles internal DOM representation of the HTML document,
+        so always use other API methods before this one.
         """
         try:
             ruthless = True
@@ -278,7 +300,7 @@ class Document:
         total_length = text_length(elem)
         return float(link_length) / max(total_length, 1)
 
-    def score_paragraphs(self, ):
+    def score_paragraphs(self):
         MIN_LEN = self.min_text_length
         candidates = {}
         ordered = []
@@ -373,6 +395,7 @@ class Document:
         }
 
     def remove_unlikely_candidates(self):
+        """Utility method"""
         for elem in self.html.iter():
             s = "%s %s" % (elem.get('class', ''), elem.get('id', ''))
             if len(s) < 2:
@@ -382,6 +405,7 @@ class Document:
                 elem.drop_tree()
 
     def transform_misused_divs_into_paragraphs(self):
+        """Utility method"""
         for elem in self.tags(self.html, 'div'):
             # transform <div>s that do not contain other block elements into
             # <p>s

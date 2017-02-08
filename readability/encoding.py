@@ -43,7 +43,7 @@ def get_encoding(page):
             encoding = fix_charset(declared_encoding)
 
             # Now let's decode the page
-            page.decode()
+            page.decode(encoding)
             # It worked!
             return encoding
         except UnicodeDecodeError:

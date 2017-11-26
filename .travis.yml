@@ -1,11 +1,13 @@
 language: python
 
 python:
-  - "3.4"
+  - "3.6"
 
 env:
   - TOX_ENV=py27
   - TOX_ENV=py34
+  - TOX_ENV=py35
+  - TOX_ENV=py36
 
 install:
   - travis_retry pip install -U pip wheel tox

@@ -16,7 +16,7 @@ from .htmls import build_doc
 from .htmls import get_body
 from .htmls import get_title
 from .htmls import shorten_title
-from .compat import str_
+from .compat import str_, bytes_
 from .debug import describe, text_content
 
 
@@ -67,14 +67,18 @@ regexp_type = type(re.compile('hello, world'))
 def compile_pattern(elements):
     if not elements:
         return None
+    elif isinstance(elements, (str_, bytes_)):
+        if isinstance(elements, bytes_):
+            elements = str_(elements, 'utf-8')
+        elements = elements.split(u',')
+        return re.compile(u'|'.join([re.escape(x.lower()) for x in elements]), re.U)
     elif isinstance(elements, (list, tuple)):
         return list(elements)
     elif isinstance(elements, regexp_type):
         return elements
     else:
+        raise Exception("Unknown format for the pattern")
         # assume string or string like object
-        elements = elements.split(',')
-        return re.compile(u'|'.join([re.escape(x.lower()) for x in elements]), re.U)
 
 class Document:
     """Class to build a etree document out of html."""
@@ -84,16 +88,18 @@ class Document:
         """Generate the document
 
         :param input: string of the html content.
-        :param positive_keywords: regex or list of patterns in classes and ids
-        :param negative_keywords: regex or list of patterns in classes and ids
+        :param positive_keywords: regex, list or comma-separated string of patterns in classes and ids
+        :param negative_keywords: regex, list or comma-separated string in classes and ids
         :param min_text_length: Tunable. Set to a higher value for more precise detection of longer texts.
         :param retry_length: Tunable. Set to a lower value for better detection of very small texts.
         :param xpath: If set to True, adds x="..." attribute to each HTML node,
         containing xpath path pointing to original document path (allows to
         reconstruct selected summary in original document).
         
-        Example:
+        Examples:
             positive_keywords=["news-item", "block"]
+            positive_keywords=["news-item, block"]
+            positive_keywords=re.compile("news|block")
             negative_keywords=["mysidebar", "related", "ads"]
 
         The Document class is not re-enterable.

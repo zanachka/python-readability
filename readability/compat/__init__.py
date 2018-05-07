@@ -6,6 +6,9 @@ syntax that can only be solved by conditionally importing different functions.
 """
 import sys
 if sys.version_info[0] == 2:
+    bytes_ = str
     str_ = unicode
+    
 elif sys.version_info[0] == 3:
+    bytes_ = bytes
     str_ = str

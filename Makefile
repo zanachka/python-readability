@@ -31,6 +31,7 @@ clean_venv:
 	rm -rf .venv
 
 develop: .venv/lib/python*/site-packages/readability-lxml.egg-link
+
 .venv/lib/python*/site-packages/readability-lxml.egg-link:
 	$(PY) setup.py develop
 

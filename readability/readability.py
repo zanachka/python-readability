@@ -67,17 +67,16 @@ regexp_type = type(re.compile('hello, world'))
 def compile_pattern(elements):
     if not elements:
         return None
+    elif isinstance(elements, regexp_type):
+        return elements
     elif isinstance(elements, (str_, bytes_)):
         if isinstance(elements, bytes_):
             elements = str_(elements, 'utf-8')
         elements = elements.split(u',')
-        return re.compile(u'|'.join([re.escape(x.lower()) for x in elements]), re.U)
-    elif isinstance(elements, (list, tuple)):
-        return list(elements)
-    elif isinstance(elements, regexp_type):
-        return elements
+    if isinstance(elements, (list, tuple)):
+        return re.compile(u'|'.join([re.escape(x.strip().lower()) for x in elements]), re.U)
     else:
-        raise Exception("Unknown format for the pattern")
+        raise Exception("Unknown type for the pattern: {}".format(type(elements)))
         # assume string or string like object
 
 class Document:
@@ -614,8 +613,8 @@ def main():
     parser.add_option('-l', '--log', default=None, help="save logs into file (appended)")
     parser.add_option('-u', '--url', default=None, help="use URL instead of a local file")
     parser.add_option('-x', '--xpath', default=None, help="add original xpath")
-    parser.add_option('-p', '--positive-keywords', default=None, help="positive keywords (separated with comma)", action='store')
-    parser.add_option('-n', '--negative-keywords', default=None, help="negative keywords (separated with comma)", action='store')
+    parser.add_option('-p', '--positive-keywords', default=None, help="positive keywords (comma-separated)", action='store')
+    parser.add_option('-n', '--negative-keywords', default=None, help="negative keywords (comma-separated)", action='store')
     (options, args) = parser.parse_args()
 
     if options.verbose:

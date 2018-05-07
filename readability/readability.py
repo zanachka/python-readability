@@ -395,7 +395,7 @@ class Document:
         }
 
     def remove_unlikely_candidates(self):
-        for elem in self.html.iter():
+        for elem in self.html.findall('.//*'):
             s = "%s %s" % (elem.get('class', ''), elem.get('id', ''))
             if len(s) < 2:
                 continue

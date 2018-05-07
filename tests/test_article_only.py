@@ -61,3 +61,34 @@ class TestArticleOnly(unittest.TestCase):
         )
         doc = Document(sample)
         doc.summary()
+
+    def test_correct_cleanup(self):
+        sample = """
+        <html>
+            <body>
+                <section>test section</section>
+                <article class="">
+<p>Lot of text here.</p>
+                <div id="advertisement"><a href="link">Ad</a></div>
+<p>More text is written here, and contains punctuation and dots.</p>
+</article>
+                <aside id="comment1"/>
+                <div id="comment2">
+                    <a href="asd">spam</a>
+                    <a href="asd">spam</a>
+                    <a href="asd">spam</a>
+                </div>
+                <div id="comment3"/>
+                <aside id="comment4">A small comment.</aside>
+                <div id="comment5"><p>The comment is also helpful, but it's
+                    still not the correct item to be extracted.</p>
+                    <p>It's even longer than the article itself!"</p></div>
+            </body>
+        </html>
+        """
+        doc = Document(sample)
+        s = doc.summary()
+        #print(s)
+        assert('punctuation' in s)
+        assert(not 'comment' in s)
+        assert(not 'aside' in s)

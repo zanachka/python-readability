@@ -381,13 +381,13 @@ class Document:
     def score_node(self, elem):
         content_score = self.class_weight(elem)
         name = elem.tag.lower()
-        if name == "div":
+        if name in ["div", "article"]:
             content_score += 5
         elif name in ["pre", "td", "blockquote"]:
             content_score += 3
-        elif name in ["address", "ol", "ul", "dl", "dd", "dt", "li", "form"]:
+        elif name in ["address", "ol", "ul", "dl", "dd", "dt", "li", "form", "aside"]:
             content_score -= 3
-        elif name in ["h1", "h2", "h3", "h4", "h5", "h6", "th"]:
+        elif name in ["h1", "h2", "h3", "h4", "h5", "h6", "th", "header", "footer", "nav"]:
             content_score -= 5
         return {
             'content_score': content_score,
@@ -463,7 +463,7 @@ class Document:
 
         allowed = {}
         # Conditionally clean <table>s, <ul>s, and <div>s
-        for el in self.reverse_tags(node, "table", "ul", "div"):
+        for el in self.reverse_tags(node, "table", "ul", "div", "aside", "header", "footer", "section"):
             if el in allowed:
                 continue
             weight = self.class_weight(el)
@@ -577,7 +577,7 @@ class Document:
                     if siblings and sum(siblings) > 1000:
                         to_remove = False
                         log.debug("Allowing %s" % describe(el))
-                        for desnode in self.tags(el, "table", "ul", "div"):
+                        for desnode in self.tags(el, "table", "ul", "div", "section"):
                             allowed[desnode] = True
 
                 if to_remove:

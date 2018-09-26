@@ -12,6 +12,14 @@ if sys.platform == 'darwin':
         print("Using lxml<2.4")
         lxml_requirement = "lxml<2.4"
 
+test_deps = [
+    # Test timeouts
+     "timeout_decorator",
+]
+extras = {
+    'test': test_deps,
+}
+
 setup(
     name="readability-lxml",
     version="0.7",
@@ -28,10 +36,8 @@ setup(
         lxml_requirement,
         "cssselect"
         ],
-    tests_require=[
-        # Test timeouts
-        "timeout_decorator",
-    ],
+    tests_require=test_deps,
+    extras_require=extras,
     classifiers=[
         "Environment :: Web Environment",
         "Intended Audience :: Developers",

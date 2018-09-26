@@ -15,7 +15,7 @@ before_install:
 
 install:
   - travis_retry pip install -U pip wheel tox
-  - travis_retry pip install -U -r requirements.txt -e .
+  - travis_retry pip install -U -r requirements.txt -e ".[test]"
 
 script:
   - tox -e $TOX_ENV

@@ -1,6 +1,10 @@
 #!/usr/bin/env python
+
 from __future__ import print_function
-from setuptools import setup, find_packages
+import codecs
+import os
+import re
+from setuptools import setup
 import sys
 
 lxml_requirement = "lxml"
@@ -16,13 +20,32 @@ test_deps = [
     # Test timeouts
      "timeout_decorator",
 ]
+
 extras = {
     'test': test_deps,
 }
 
+# Adapted from https://github.com/pypa/pip/blob/master/setup.py
+def find_version(*file_paths):
+    here = os.path.abspath(os.path.dirname(__file__))
+
+    # Intentionally *not* adding an encoding option to open, See:
+    #   https://github.com/pypa/virtualenv/issues/201#issuecomment-3145690
+    with codecs.open(os.path.join(here, *file_paths), 'r') as fp:
+        version_file = fp.read()
+        version_match = re.search(
+            r"^__version__ = ['\"]([^'\"]*)['\"]",
+            version_file,
+            re.M,
+        )
+        if version_match:
+            return version_match.group(1)
+
+    raise RuntimeError("Unable to find version string.")
+
 setup(
     name="readability-lxml",
-    version="0.7",
+    version=find_version("readability", "__init__.py"),
     author="Yuri Baburov",
     author_email="burchik@gmail.com",
     description="fast html to text parser (article readability tool) with python3 support",
@@ -53,5 +76,6 @@ setup(
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
     ],
 )

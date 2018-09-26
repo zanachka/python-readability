@@ -16,6 +16,14 @@ if sys.platform == 'darwin':
         print("Using lxml<2.4")
         lxml_requirement = "lxml<2.4"
 
+test_deps = [
+    # Test timeouts
+     "timeout_decorator",
+]
+
+extras = {
+    'test': test_deps,
+}
 
 # Adapted from https://github.com/pypa/pip/blob/master/setup.py
 def find_version(*file_paths):
@@ -35,7 +43,6 @@ def find_version(*file_paths):
 
     raise RuntimeError("Unable to find version string.")
 
-
 setup(
     name="readability-lxml",
     version=find_version("readability", "__init__.py"),
@@ -52,6 +59,8 @@ setup(
         lxml_requirement,
         "cssselect"
         ],
+    tests_require=test_deps,
+    extras_require=extras,
     classifiers=[
         "Environment :: Web Environment",
         "Intended Audience :: Developers",

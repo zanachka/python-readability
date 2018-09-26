@@ -54,6 +54,9 @@ def to_int(x):
 
 
 def clean(text):
+    # Many spaces make the following regexes run forever
+    text = re.sub(r'\s{255,}', ' ' * 255, text)
+
     text = re.sub('\s*\n\s*', '\n', text)
     text = re.sub('\t|[ \t]{2,}', ' ', text)
     return text.strip()

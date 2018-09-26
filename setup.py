@@ -28,6 +28,10 @@ setup(
         lxml_requirement,
         "cssselect"
         ],
+    tests_require=[
+        # Test timeouts
+        "timeout_decorator",
+    ],
     classifiers=[
         "Environment :: Web Environment",
         "Intended Audience :: Developers",

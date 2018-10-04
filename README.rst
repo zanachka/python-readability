@@ -41,8 +41,9 @@ Usage
 Change Log
 ----------
 
+-  0.7.1 Support for Python 3.7
 -  0.7 Improved HTML5 tags handling. Fixed stripping unwanted HTML nodes (only first matching node was removed before).
--  0.6 Finally a release which supports Python versions 2.6, 2.7, 3.3 and 3.4
+-  0.6 Finally a release which supports Python versions 2.6, 2.7, 3.3 - 3.6
 -  0.5 Preparing a release to support Python versions 2.6, 2.7, 3.3 and 3.4
 -  0.4 Added Videos loading and allowed more images per paragraph
 -  0.3 Added Document.encoding, positive\_keywords and negative\_keywords

@@ -31,19 +31,21 @@ Usage
     >> doc = Document(response.text)
     >> doc.title()
     >> 'Example Domain'
+    >> doc.summary()
+    >> u'<html><body><div><body id="readabilityBody">\n<div>\n    <h1>Example Domain</h1>\n
+    <p>This domain is established to be used for illustrative examples in documents. You may
+    use this\n    domain in examples without prior coordination or asking for permission.</p>
+    \n    <p><a href="http://www.iana.org/domains/example">More information...</a></p>\n</div>
+    \n</body>\n</div></body></html>'
 
 Change Log
 ----------
 
--  0.7 Improved HTML5 tags handling. Heuristics were changed for a lot of sites: Fixed an important
-bug with stripping unwanted HTML nodes (only first matching node was removed before).
--  0.6 Finally a release which supports Python versions 2.6, 2.7, 3.3
-   and 3.4
--  0.5 Preparing a release to support Python versions 2.6, 2.7, 3.3 and
-   3.4
+-  0.7 Improved HTML5 tags handling. Fixed stripping unwanted HTML nodes (only first matching node was removed before).
+-  0.6 Finally a release which supports Python versions 2.6, 2.7, 3.3 and 3.4
+-  0.5 Preparing a release to support Python versions 2.6, 2.7, 3.3 and 3.4
 -  0.4 Added Videos loading and allowed more images per paragraph
--  0.3 Added Document.encoding, positive\_keywords and
-   negative\_keywords
+-  0.3 Added Document.encoding, positive\_keywords and negative\_keywords
 
 Licensing
 =========
@@ -54,14 +56,9 @@ This code is under `the Apache License
 Thanks to
 ---------
 
--  Latest
-   `readability.js <https://github.com/MHordecki/readability-redux/blob/master/readability/readability.js>`__
+-  Latest `readability.js <https://github.com/MHordecki/readability-redux/blob/master/readability/readability.js>`__
 -  Ruby port by starrhorne and iterationlabs
--  `Python port <https://github.com/gfxmonk/python-readability>`__ by
-   gfxmonk
--  `Decruft
-   effort <http://www.minvolai.com/blog/decruft-arc90s-readability-in-python/>`__
-   to move to lxml
--  "BR to P" fix from readability.js which improves quality for smaller
-   texts
+-  `Python port <https://github.com/gfxmonk/python-readability>`__ by gfxmonk
+-  `Decruft effort <http://www.minvolai.com/blog/decruft-arc90s-readability-in-python/>` to move to lxml
+-  "BR to P" fix from readability.js which improves quality for smaller texts
 -  Github users contributions.

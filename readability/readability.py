@@ -86,7 +86,8 @@ class Document:
     """Class to build a etree document out of html."""
 
     def __init__(self, input, positive_keywords=None, negative_keywords=None,
-                 url=None, min_text_length=25, retry_length=250, xpath=False):
+                 url=None, min_text_length=25, retry_length=250, xpath=False,
+                 handle_failures='discard'):
         """Generate the document
 
         :param input: string of the html content.
@@ -97,6 +98,8 @@ class Document:
         :param xpath: If set to True, adds x="..." attribute to each HTML node,
         containing xpath path pointing to original document path (allows to
         reconstruct selected summary in original document).
+        :param handle_failures: Parameter passed to `lxml` for handling failure during exception. 
+        Support options = ["discard", "ignore", None]
         
         Examples:
             positive_keywords=["news-item", "block"]
@@ -122,6 +125,7 @@ class Document:
         self.min_text_length = min_text_length
         self.retry_length = retry_length
         self.xpath = xpath
+        self.handle_failures = handle_failures
 
     def _html(self, force=False):
         if force or self.html is None:
@@ -141,13 +145,13 @@ class Document:
             # trying to guard against bad links like <a href="http://[http://...">
             try:
                 # such support is added in lxml 3.3.0
-                doc.make_links_absolute(base_href, resolve_base_href=True, handle_failures='discard')
+                doc.make_links_absolute(base_href, resolve_base_href=True, handle_failures=self.handle_failures)
             except TypeError: #make_links_absolute() got an unexpected keyword argument 'handle_failures'
                 # then we have lxml < 3.3.0
                 # please upgrade to lxml >= 3.3.0 if you're failing here!
-                doc.make_links_absolute(base_href, resolve_base_href=True)
+                doc.make_links_absolute(base_href, resolve_base_href=True, handle_failures=self.handle_failures)
         else:
-            doc.resolve_base_href()
+            doc.resolve_base_href(handle_failures=self.handle_failures)
         return doc
 
     def content(self):

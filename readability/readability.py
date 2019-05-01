@@ -77,7 +77,7 @@ def compile_pattern(elements):
             elements = str_(elements, 'utf-8')
         elements = elements.split(u',')
     if isinstance(elements, (list, tuple)):
-        return re.compile(u'|'.join([re.escape(x.strip().lower()) for x in elements]), re.U)
+        return re.compile(u'|'.join([re.escape(x.strip()) for x in elements]), re.U)
     else:
         raise Exception("Unknown type for the pattern: {}".format(type(elements)))
         # assume string or string like object

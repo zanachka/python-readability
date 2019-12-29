@@ -51,7 +51,7 @@ def get_encoding(page):
 
     # Fallback to chardet if declared encodings fail
     # Remove all HTML tags, and leave only text for chardet
-    text = re.sub(b'(\s*</?[^>]*>)+\s*', b' ', page).strip()
+    text = re.sub(br'(\s*</?[^>]*>)+\s*', b' ', page).strip()
     enc = 'utf-8'
     if len(text) < 10:
         return enc # can't guess

@@ -178,7 +178,7 @@ class Document:
         Given a HTML file, extracts the text of the article.
 
         :param html_partial: return only the div of the document, don't wrap
-        in html and body tags.
+                             in html and body tags.
 
         Warning: It mutates internal DOM representation of the HTML document,
         so it is better to call other API methods before this one.

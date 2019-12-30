@@ -46,7 +46,7 @@ def get_encoding(page):
             page.decode(encoding)
             # It worked!
             return encoding
-        except UnicodeDecodeError:
+        except (UnicodeDecodeError, LookupError):
             pass
 
     # Fallback to chardet if declared encodings fail

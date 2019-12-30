@@ -41,7 +41,7 @@ def describe(node, depth=1):
     return parent + describe_node(node)
 
 
-RE_COLLAPSE_WHITESPACES = re.compile('\s+', re.U)
+RE_COLLAPSE_WHITESPACES = re.compile(r'\s+', re.U)
 
 
 def text_content(elem, length=40):

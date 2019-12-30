@@ -106,3 +106,8 @@ class TestArticleOnly(unittest.TestCase):
         s = doc.summary()
 
         assert 'foo' in s
+
+    def test_not_self_closing(self):
+        sample = '<h2><a href="#"></a>foobar</h2>'
+        doc = Document(sample)
+        assert '<body id="readabilityBody"><h2><a href="#"></a>foobar</h2></body>' == doc.summary()

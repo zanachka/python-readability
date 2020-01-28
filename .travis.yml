@@ -24,6 +24,7 @@ matrix:
       os: osx
       osx_image: xcode9.4
       language: shell
+      env: TOXENV=py37
       before_install:
         - sw_vers
         - python3 --version
@@ -32,6 +33,7 @@ matrix:
       os: osx
       osx_image: xcode11
       language: shell
+      env: TOXENV=py37
       before_install:
         - sw_vers
         - python3 --version

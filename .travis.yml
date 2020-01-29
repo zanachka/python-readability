@@ -6,6 +6,7 @@ matrix:
   include:
     - name: "Python 2.7 on Linux"
       python: 2.7
+      env: TOXENV=py27
     - name: "Python 3.5 on Linux"
       python: 3.5
     - name: "Python 3.6 on Linux"
@@ -20,6 +21,7 @@ matrix:
       python: nightly
     - name: "Pypy on Linux"
       python: pypy
+      env: TOXENV=py27
     - name: "Pypy 3 on Linux"
       python: pypy3
     - name: "Python 3 on older macOS"
@@ -35,7 +37,7 @@ matrix:
       os: osx
       osx_image: xcode11
       language: shell
-      env: TOXENV=py37 PYENV_VERSION=3.7
+      env: TOXENV=py37
       before_install:
         - sw_vers
         - python3 --version
@@ -47,8 +49,9 @@ matrix:
     - os: osx
 
 install:
-  - travis_retry pip install -U pip wheel tox-travis
-  - travis_retry pip install -U -r requirements.txt -e ".[test]"
+  - if echo $TOXENV | grep -q py27; then PIP=pip; else PIP=pip3; fi
+  - travis_retry $PIP install -U pip wheel tox-travis
+  - travis_retry $PIP install -U -r requirements.txt -e ".[test]"
 
 script:
   - tox

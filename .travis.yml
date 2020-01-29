@@ -18,6 +18,8 @@ matrix:
     - name: "Python 3.9 Nightly on Linux"
       dist: bionic
       python: nightly
+    - name: "Pypy on Linux"
+      python: pypy
     - name: "Pypy 3 on Linux"
       python: pypy3
     - name: "Python 3 on older macOS"
@@ -32,15 +34,15 @@ matrix:
     - name: "Python 3 on macOS"
       os: osx
       osx_image: xcode11
-      python: python3
       language: shell
-      env: TOXENV=py37
+      env: TOXENV=py37 PYENV_VERSION=3.7
       before_install:
         - sw_vers
         - python3 --version
         - pip3 --version
   allow_failures:
     - python: nightly
+    - python: pypy
     - python: pypy3
     - os: osx
 

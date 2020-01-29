@@ -32,6 +32,7 @@ matrix:
     - name: "Python 3 on macOS"
       os: osx
       osx_image: xcode11
+      python: python3
       language: shell
       env: TOXENV=py37
       before_install:

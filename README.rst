@@ -15,29 +15,29 @@ Installation
 
 It's easy using ``pip``, just run:
 
-::
+.. code-block:: bash
 
     $ pip install readability-lxml
 
 Usage
 -----
 
-::
+.. code-block:: python
 
     >>> import requests
     >>> from readability import Document
-    
+
     >>> response = requests.get('http://example.com')
     >>> doc = Document(response.text)
     >>> doc.title()
     'Example Domain'
-    
+
     >>> doc.summary()
-    u'<html><body><div><body id="readabilityBody">\n<div>\n    <h1>Example Domain</h1>\n
+    """<html><body><div><body id="readabilityBody">\n<div>\n    <h1>Example Domain</h1>\n
     <p>This domain is established to be used for illustrative examples in documents. You may
     use this\n    domain in examples without prior coordination or asking for permission.</p>
     \n    <p><a href="http://www.iana.org/domains/example">More information...</a></p>\n</div>
-    \n</body>\n</div></body></html>'
+    \n</body>\n</div></body></html>"""
 
 Change Log
 ----------

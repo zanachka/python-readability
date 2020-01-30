@@ -50,8 +50,11 @@ matrix:
 
 install:
   - if [ $PIP ]; then true; else PIP=pip3; fi
-  - travis_retry $PIP install -U pip wheel tox-travis
+  - travis_retry $PIP install -U pip wheel tox-travis pytest-cov codecov
   - travis_retry $PIP install -U -r requirements.txt -e ".[test]"
 
 script:
   - tox
+
+after_success:
+  - codecov

@@ -49,5 +49,3 @@ def text_content(elem, length=40):
     if len(content) < length:
         return content
     return content[:length] + '...'
-
-

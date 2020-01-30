@@ -14,10 +14,12 @@ htmlstrip = re.compile("<" # open
     ">"        # end
 , re.I)
 
+
 def clean_attributes(html):
     while htmlstrip.search(html):
         html = htmlstrip.sub('<\\1\\2>', html)
     return html
+
 
 def normalize_spaces(s):
     if not s:
@@ -25,6 +27,7 @@ def normalize_spaces(s):
     """replace any sequence of whitespace
     characters with a single space"""
     return ' '.join(s.split())
+
 
 html_cleaner = Cleaner(scripts=True, javascript=True, comments=True,
                   style=True, links=True, meta=False, add_nofollow=False,

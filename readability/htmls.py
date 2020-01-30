@@ -1,13 +1,13 @@
 from lxml.html import tostring
-import logging
 import lxml.html
-import re, sys
+import re
 
 from .cleaners import normalize_spaces, clean_attributes
 from .encoding import get_encoding
 from .compat import str_
 
 utf8_parser = lxml.html.HTMLParser(encoding='utf-8')
+
 
 def build_doc(page):
     if isinstance(page, str_):
@@ -16,13 +16,15 @@ def build_doc(page):
     else:
         encoding = get_encoding(page) or 'utf-8'
         decoded_page = page.decode(encoding, 'replace')
-    
+
     # XXX: we have to do .decode and .encode even for utf-8 pages to remove bad characters
     doc = lxml.html.document_fromstring(decoded_page.encode('utf-8', 'replace'), parser=utf8_parser)
     return doc, encoding
 
+
 def js_re(src, pattern, flags, repl):
     return re.compile(pattern, flags).sub(src, repl.replace('$', '\\'))
+
 
 def normalize_entities(cur_title):
     entities = {
@@ -41,8 +43,10 @@ def normalize_entities(cur_title):
 
     return cur_title
 
+
 def norm_title(title):
     return normalize_entities(normalize_spaces(title))
+
 
 def get_title(doc):
     title = doc.find('.//title')
@@ -51,15 +55,18 @@ def get_title(doc):
 
     return norm_title(title.text)
 
+
 def add_match(collection, text, orig):
     text = norm_title(text)
     if len(text.split()) >= 2 and len(text) >= 15:
         if text.replace('"', '') in orig.replace('"', ''):
             collection.add(text)
 
+
 TITLE_CSS_HEURISTICS = ['#title', '#head', '#heading', '.pageTitle',
                         '.news_title', '.title', '.head', '.heading',
                         '.contentheading', '.small_header_red']
+
 
 def shorten_title(doc):
     title = doc.find('.//title')
@@ -109,6 +116,8 @@ def shorten_title(doc):
 
     return title
 
+
+# is it necessary? Cleaner from LXML is initialized correctly in cleaners.py
 def get_body(doc):
     for elem in doc.xpath('.//script | .//link | .//style'):
         elem.drop_tree()

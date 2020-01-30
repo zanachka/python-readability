@@ -4,7 +4,6 @@ import logging
 import re
 import sys
 
-from collections import defaultdict
 from lxml.etree import tostring
 from lxml.etree import tounicode
 from lxml.html import document_fromstring
@@ -56,7 +55,6 @@ def to_int(x):
 def clean(text):
     # Many spaces make the following regexes run forever
     text = re.sub(r'\s{255,}', ' ' * 255, text)
-
     text = re.sub(r'\s*\n\s*', '\n', text)
     text = re.sub(r'\t|[ \t]{2,}', ' ', text)
     return text.strip()
@@ -65,12 +63,11 @@ def clean(text):
 def text_length(i):
     return len(clean(i.text_content() or ""))
 
-regexp_type = type(re.compile('hello, world'))
 
 def compile_pattern(elements):
     if not elements:
         return None
-    elif isinstance(elements, regexp_type):
+    elif isinstance(elements, re._pattern_type):
         return elements
     elif isinstance(elements, (str_, bytes_)):
         if isinstance(elements, bytes_):
@@ -81,6 +78,7 @@ def compile_pattern(elements):
     else:
         raise Exception("Unknown type for the pattern: {}".format(type(elements)))
         # assume string or string like object
+
 
 class Document:
     """Class to build a etree document out of html."""
@@ -98,9 +96,9 @@ class Document:
         :param xpath: If set to True, adds x="..." attribute to each HTML node,
         containing xpath path pointing to original document path (allows to
         reconstruct selected summary in original document).
-        :param handle_failures: Parameter passed to `lxml` for handling failure during exception. 
+        :param handle_failures: Parameter passed to `lxml` for handling failure during exception.
         Support options = ["discard", "ignore", None]
-        
+
         Examples:
             positive_keywords=["news-item", "block"]
             positive_keywords=["news-item, block"]
@@ -290,7 +288,7 @@ class Document:
             return None
 
         sorted_candidates = sorted(
-            candidates.values(), 
+            candidates.values(),
             key=lambda x: x['content_score'],
             reverse=True
         )
@@ -517,10 +515,10 @@ class Document:
 
                 #if el.tag == 'div' and counts["img"] >= 1:
                 #    continue
-                if counts["p"] and counts["img"] > 1+counts["p"]*1.3:
+                if counts["p"] and counts["img"] > 1 + counts["p"]*1.3:
                     reason = "too many images (%s)" % counts["img"]
                     to_remove = True
-                elif counts["li"] > counts["p"] and tag != "ul" and tag != "ol":
+                elif counts["li"] > counts["p"] and tag not in ("ol", "ul"):
                     reason = "more <li>s than <p>s"
                     to_remove = True
                 elif counts["input"] > (counts["p"] / 3):

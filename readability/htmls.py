@@ -134,7 +134,9 @@ def get_body(doc):
         elem.drop_tree()
     # tostring() always return utf-8 encoded string
     # FIXME: isn't better to use tounicode?
-    raw_html = str_(tostring(doc.body or doc))
+    raw_html = tostring(doc.body or doc)
+    if isinstance(raw_html, bytes):
+        raw_html = raw_html.decode()
     cleaned = clean_attributes(raw_html)
     try:
         # BeautifulSoup(cleaned) #FIXME do we really need to try loading it?

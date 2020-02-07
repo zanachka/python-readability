@@ -1,5 +1,8 @@
 import re
-import chardet
+try:
+    import cchardet
+except ImportError:
+    import chardet
 import sys
 
 

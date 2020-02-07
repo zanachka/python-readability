@@ -16,12 +16,17 @@ if sys.platform == 'darwin':
         print("Using lxml<2.4")
         lxml_requirement = "lxml<2.4"
 
+speed_deps = [
+     "cchardet",
+]
+
 test_deps = [
     # Test timeouts
      "timeout_decorator",
 ]
 
 extras = {
+    'speed': speed_deps,
     'test': test_deps,
 }
 

@@ -8,10 +8,11 @@ from setuptools import setup
 import sys
 
 lxml_requirement = "lxml"
-if sys.platform == 'darwin':
+if sys.platform == "darwin":
     import platform
+
     mac_ver = platform.mac_ver()[0]
-    mac_ver_no = int(mac_ver.split('.')[1])
+    mac_ver_no = int(mac_ver.split(".")[1])
     if mac_ver_no < 9:
         print("Using lxml<2.4")
         lxml_requirement = "lxml<2.4"
@@ -22,7 +23,7 @@ speed_deps = [
 
 test_deps = [
     # Test timeouts
-     "timeout_decorator",
+    "timeout_decorator",
 ]
 
 extras = {
@@ -36,17 +37,16 @@ def find_version(*file_paths):
 
     # Intentionally *not* adding an encoding option to open, See:
     #   https://github.com/pypa/virtualenv/issues/201#issuecomment-3145690
-    with codecs.open(os.path.join(here, *file_paths), 'r') as fp:
+    with codecs.open(os.path.join(here, *file_paths), "r") as fp:
         version_file = fp.read()
         version_match = re.search(
-            r"^__version__ = ['\"]([^'\"]*)['\"]",
-            version_file,
-            re.M,
+            r"^__version__ = ['\"]([^'\"]*)['\"]", version_file, re.M,
         )
         if version_match:
             return version_match.group(1)
 
     raise RuntimeError("Unable to find version string.")
+
 
 setup(
     name="readability-lxml",
@@ -54,16 +54,12 @@ setup(
     author="Yuri Baburov",
     author_email="burchik@gmail.com",
     description="fast html to text parser (article readability tool) with python3 support",
-    test_suite = "tests.test_article_only",
+    test_suite="tests.test_article_only",
     long_description=open("README.rst").read(),
     license="Apache License 2.0",
     url="http://github.com/buriy/python-readability",
-    packages=['readability', 'readability.compat'],
-    install_requires=[
-        "chardet",
-        lxml_requirement,
-        "cssselect"
-        ],
+    packages=["readability", "readability.compat"],
+    install_requires=["chardet", lxml_requirement, "cssselect"],
     tests_require=test_deps,
     extras_require=extras,
     classifiers=[

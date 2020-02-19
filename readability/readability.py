@@ -159,6 +159,7 @@ class Document:
     def _parse(self, input):
         if isinstance(input, (_ElementTree, HtmlElement)):
             doc = input
+            self.encoding = 'utf-8'
         else:
             doc, self.encoding = build_doc(input)
         doc = html_cleaner.clean_html(doc)

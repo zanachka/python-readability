@@ -42,8 +42,8 @@ Usage
 Change Log
 ----------
 
--  0.8 Fixed processing of non-ascii HTMLs via regexps.
--  0.8beta Replaced XHTML output with HTML5 output in summary() call.
+-  0.8.1 Fixed processing of non-ascii HTMLs via regexps.
+-  0.8 Replaced XHTML output with HTML5 output in summary() call.
 -  0.7.1 Support for Python 3.7 . Fixed a slowdown when processing documents with lots of spaces.
 -  0.7 Improved HTML5 tags handling. Fixed stripping unwanted HTML nodes (only first matching node was removed before).
 -  0.6 Finally a release which supports Python versions 2.6, 2.7, 3.3 - 3.6

@@ -118,3 +118,9 @@ class TestArticleOnly(unittest.TestCase):
             '<body id="readabilityBody"><h2><a href="#"></a>foobar</h2></body>'
             == doc.summary()
         )
+
+    def test_utf8_kanji(self):
+        """Using the UTF-8 kanji sample, load article which is written in kanji"""
+        sample = load_sample("utf-8-kanji.sample.html")
+        doc = Document(sample)
+        res = doc.summary()

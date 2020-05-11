@@ -4,7 +4,6 @@ import logging
 import re
 import sys
 
-from lxml.etree import tostring
 from lxml.etree import tounicode
 from lxml.html import document_fromstring
 from lxml.html import fragment_fromstring
@@ -15,7 +14,7 @@ from .htmls import build_doc
 from .htmls import get_body
 from .htmls import get_title
 from .htmls import shorten_title
-from .compat import str_, bytes_
+from .compat import str_, bytes_, tostring_
 from .debug import describe, text_content
 
 
@@ -464,7 +463,7 @@ class Document:
             # This results in incorrect results in case there is an <img>
             # buried within an <a> for example
             if not REGEXES["divToPElementsRe"].search(
-                str_(b"".join(map(lambda it: tostring(it, encoding="utf-8"), list(elem))))
+                str_(b"".join(map(tostring_, list(elem))))
             ):
                 # log.debug("Altering %s to p" % (describe(elem)))
                 elem.tag = "p"

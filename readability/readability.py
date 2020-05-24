@@ -327,7 +327,7 @@ class Document:
         )
         for candidate in sorted_candidates[:5]:
             elem = candidate["elem"]
-            log.info("Top 5 : %6.3f %s" % (candidate["content_score"], describe(elem)))
+            log.debug("Top 5 : %6.3f %s" % (candidate["content_score"], describe(elem)))
 
         best_candidate = sorted_candidates[0]
         return best_candidate

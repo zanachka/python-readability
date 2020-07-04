@@ -52,7 +52,7 @@ Change Log
 -  0.3 Added Document.encoding, positive\_keywords and negative\_keywords
 
 Licensing
---------
+---------
 
 This code is under `the Apache License
 2.0 <http://www.apache.org/licenses/LICENSE-2.0>`__ license.

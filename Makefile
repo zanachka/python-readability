@@ -4,6 +4,7 @@ PY := .venv/bin/python
 PIP := .venv/bin/pip
 PEP8 := .venv/bin/pep8
 NOSE := .venv/bin/nosetests
+TWINE := twine
 
 # ###########
 # Tests rule!
@@ -12,22 +13,24 @@ NOSE := .venv/bin/nosetests
 test: venv develop $(NOSE)
 	$(NOSE) --with-id -s tests
 
-$(NOSE):
-	$(PIP) install nose pep8 coverage
+$(NOSE): setup
 
 # #######
 # INSTALL
 # #######
 .PHONY: all
-all: venv develop
+all: setup develop
 
 venv: .venv/bin/python
+
+setup: venv
+	$(PIP) install -r requirements-dev.txt
 
 .venv/bin/python:
 	virtualenv .venv
 
-.PHONY: clean_venv
-clean_venv:
+.PHONY: clean
+clean:
 	rm -rf .venv
 
 develop: .venv/lib/python*/site-packages/readability-lxml.egg-link
@@ -48,11 +51,12 @@ clean_all: clean_venv
 # ###########
 .PHONY: dist
 dist:
-	$(PY) setup.py sdist
+	$(PY) setup.py sdist bdist_wheel
+	$(TWINE) check dist/*
 
 .PHONY: upload
 upload:
-	$(PY) setup.py sdist upload
+	$(TWINE) upload dist/*
 
 .PHONY: version_update
 version_update:

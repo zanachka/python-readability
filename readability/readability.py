@@ -14,7 +14,7 @@ from .htmls import build_doc
 from .htmls import get_body
 from .htmls import get_title
 from .htmls import shorten_title
-from .compat import str_, bytes_, tostring_
+from .compat import str_, bytes_, tostring_, pattern_type
 from .debug import describe, text_content
 
 
@@ -77,7 +77,7 @@ def text_length(i):
 def compile_pattern(elements):
     if not elements:
         return None
-    elif isinstance(elements, re._pattern_type):
+    elif isinstance(elements, pattern_type):
         return elements
     elif isinstance(elements, (str_, bytes_)):
         if isinstance(elements, bytes_):

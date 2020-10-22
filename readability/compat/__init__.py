@@ -18,3 +18,9 @@ elif sys.version_info[0] == 3:
     str_ = str
     def tostring_(s):
         return tostring(s, encoding='utf-8')
+
+
+try:
+    from re import Pattern as pattern_type
+except ImportError:
+    from re import _pattern_type as pattern_type

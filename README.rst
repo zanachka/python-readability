@@ -1,6 +1,7 @@
 .. image:: https://travis-ci.org/buriy/python-readability.svg?branch=master
     :target: https://travis-ci.org/buriy/python-readability
-
+.. image:: https://img.shields.io/pypi/v/readability-lxml.svg
+    :target: https://pypi.python.org/pypi/readability-lxml
 
 python-readability
 ==================

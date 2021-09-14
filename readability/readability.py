@@ -5,8 +5,10 @@ import re
 import sys
 
 from lxml.etree import tounicode
+from lxml.etree import _ElementTree
 from lxml.html import document_fromstring
 from lxml.html import fragment_fromstring
+from lxml.html import HtmlElement
 
 from .cleaners import clean_attributes
 from .cleaners import html_cleaner
@@ -154,7 +156,11 @@ class Document:
         return self.html
 
     def _parse(self, input):
-        doc, self.encoding = build_doc(input)
+        if isinstance(input, (_ElementTree, HtmlElement)):
+            doc = input
+            self.encoding = 'utf-8'
+        else:
+            doc, self.encoding = build_doc(input)
         doc = html_cleaner.clean_html(doc)
         base_href = self.url
         if base_href:

@@ -17,13 +17,18 @@ if sys.platform == "darwin":
         print("Using lxml<2.4")
         lxml_requirement = "lxml<2.4"
 
+speed_deps = [
+     "cchardet",
+]
+
 test_deps = [
     # Test timeouts
     "timeout_decorator",
 ]
 
 extras = {
-    "test": test_deps,
+    'speed': speed_deps,
+    'test': test_deps,
 }
 
 # Adapted from https://github.com/pypa/pip/blob/master/setup.py

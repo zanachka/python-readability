@@ -20,6 +20,12 @@ It's easy using ``pip``, just run:
 
     $ pip install readability-lxml
 
+As an alternative, you may also use conda to install, just run:
+
+.. code-block:: bash
+
+    $ conda install -c conda-forge readability-lxml 
+
 Usage
 -----
 

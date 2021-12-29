@@ -58,6 +58,15 @@ def get_title(doc):
     return norm_title(title.text)
 
 
+def get_author(doc):
+    author = doc.find(".//meta[@name='author']")
+    if author is None or 'content' not in author.keys() or \
+       len(author.get('content')) == 0:
+        return "[no-author]"
+
+    return author.get('content')
+
+
 def add_match(collection, text, orig):
     text = norm_title(text)
     if len(text.split()) >= 2 and len(text) >= 15:

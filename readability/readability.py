@@ -15,6 +15,7 @@ from .cleaners import html_cleaner
 from .htmls import build_doc
 from .htmls import get_body
 from .htmls import get_title
+from .htmls import get_author
 from .htmls import shorten_title
 from .compat import str_, bytes_, tostring_, pattern_type
 from .debug import describe, text_content
@@ -191,6 +192,10 @@ class Document:
     def title(self):
         """Returns document title"""
         return get_title(self._html(True))
+
+    def author(self):
+        """Returns document author"""
+        return get_author(self._html(True))
 
     def short_title(self):
         """Returns cleaned up document title"""

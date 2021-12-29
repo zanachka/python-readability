@@ -124,3 +124,13 @@ class TestArticleOnly(unittest.TestCase):
         sample = load_sample("utf-8-kanji.sample.html")
         doc = Document(sample)
         res = doc.summary()
+
+    def test_author_present(self):
+        sample = load_sample("the-hurricane-rubin-carter-denzel-washington.html")
+        doc = Document(sample)
+        assert 'Alex von Tunzelmann' == doc.author()
+
+    def test_author_absent(self):
+        sample = load_sample("si-game.sample.html")
+        doc = Document(sample)
+        assert '[no-author]' == doc.author()

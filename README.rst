@@ -9,7 +9,7 @@ python-readability
 Given a html document, it pulls out the main body text and cleans it up.
 
 This is a python port of a ruby port of `arc90's readability
-project <http://lab.arc90.com/experiments/readability/>`__.
+project <https://web.archive.org/web/20130519040221/http://www.readability.com/>`__.
 
 Installation
 ------------
@@ -71,6 +71,6 @@ Thanks to
 -  Latest `readability.js <https://github.com/MHordecki/readability-redux/blob/master/readability/readability.js>`__
 -  Ruby port by starrhorne and iterationlabs
 -  `Python port <https://github.com/gfxmonk/python-readability>`__ by gfxmonk
--  `Decruft effort <http://www.minvolai.com/blog/decruft-arc90s-readability-in-python/>` to move to lxml
+-  `Decruft effort <https://web.archive.org/web/20110214150709/https://www.minvolai.com/blog/decruft-arc90s-readability-in-python/>` to move to lxml
 -  "BR to P" fix from readability.js which improves quality for smaller texts
 -  Github users contributions.

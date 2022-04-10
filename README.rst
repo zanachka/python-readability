@@ -6,7 +6,7 @@
 python-readability
 ==================
 
-Given an HTML document, extract and clean up the main body text.
+Given an HTML document, extract and clean up the main body text and title.
 
 This is a Python port of a Ruby port of `arc90's Readability
 project <https://web.archive.org/web/20130519040221/http://www.readability.com/>`__.

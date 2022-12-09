@@ -35,7 +35,7 @@ Usage
     >>> from readability import Document
 
     >>> response = requests.get('http://example.com')
-    >>> doc = Document(response.text)
+    >>> doc = Document(response.content)
     >>> doc.title()
     'Example Domain'
 

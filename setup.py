@@ -23,7 +23,7 @@ speed_deps = [
 
 test_deps = [
     # Test timeouts
-    "timeout_decorator",
+    "wrapt-timeout-decorator",
 ]
 
 extras = {

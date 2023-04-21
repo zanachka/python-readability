@@ -2,8 +2,7 @@ import os
 import unittest
 
 from readability import Document
-import timeout_decorator
-
+from wrapt_timeout_decorator import *
 
 SAMPLES = os.path.join(os.path.dirname(__file__), "samples")
 
@@ -101,7 +100,7 @@ class TestArticleOnly(unittest.TestCase):
         assert not "aside" in s
 
     # Many spaces make some regexes run forever
-    @timeout_decorator.timeout(seconds=3, use_signals=False)
+    @timeout(3, use_signals=False)
     def test_many_repeated_spaces(self):
         long_space = " " * 1000000
         sample = "<html><body><p>foo" + long_space + "</p></body></html>"

@@ -3,4 +3,4 @@ chardet
 nose
 pep8
 coverage
-timeout_decorator
+wrapt-timeout-decorator

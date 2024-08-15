@@ -5,7 +5,6 @@ import codecs
 import os
 import re
 from setuptools import setup
-import sys
 
 speed_deps = [
      "cchardet",
@@ -69,5 +68,8 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: Implementation :: PyPy",
     ],
 )

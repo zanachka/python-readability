@@ -91,7 +91,7 @@ def compile_pattern(elements):
     if isinstance(elements, (list, tuple)):
         return re.compile("|".join([re.escape(x.strip()) for x in elements]), re.U)
     else:
-        raise Exception("Unknown type for the pattern: {}".format(type(elements)))
+        raise Exception(f"Unknown type for the pattern: {type(elements)}")
         # assume string or string like object
 
 
@@ -332,7 +332,7 @@ class Document:
         )
         for candidate in sorted_candidates[:5]:
             elem = candidate["elem"]
-            log.debug("Top 5 : %6.3f %s" % (candidate["content_score"], describe(elem)))
+            log.debug("Top 5 : {:6.3f} {}".format(candidate["content_score"], describe(elem)))
 
         best_candidate = sorted_candidates[0]
         return best_candidate
@@ -448,7 +448,7 @@ class Document:
 
     def remove_unlikely_candidates(self):
         for elem in self.html.findall(".//*"):
-            s = "%s %s" % (elem.get("class", ""), elem.get("id", ""))
+            s = "{} {}".format(elem.get("class", ""), elem.get("id", ""))
             if len(s) < 2:
                 continue
             if (

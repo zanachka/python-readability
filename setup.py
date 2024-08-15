@@ -49,7 +49,12 @@ setup(
     license="Apache License 2.0",
     url="http://github.com/buriy/python-readability",
     packages=["readability", "readability.compat"],
-    install_requires=["chardet", "lxml", "cssselect"],
+    install_requires=[
+        "chardet",
+        "lxml[html_clean]",
+        "lxml-html-clean; python_version < '3.11'",
+        "cssselect"
+    ],
     tests_require=test_deps,
     extras_require=extras,
     classifiers=[

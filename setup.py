@@ -1,21 +1,9 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
 import codecs
 import os
 import re
 from setuptools import setup
-import sys
-
-lxml_requirement = "lxml"
-if sys.platform == "darwin":
-    import platform
-
-    mac_ver = platform.mac_ver()[0]
-    mac_major, mac_minor = mac_ver.split('.')[:2]
-    if int(mac_major) == 10 and int(mac_minor) < 9:
-        print("Using lxml<2.4")
-        lxml_requirement = "lxml<2.4"
 
 speed_deps = [
      "cchardet",
@@ -59,8 +47,13 @@ setup(
     long_description_content_type='text/x-rst',
     license="Apache License 2.0",
     url="http://github.com/buriy/python-readability",
-    packages=["readability", "readability.compat"],
-    install_requires=["chardet", lxml_requirement, "cssselect"],
+    packages=["readability"],
+    install_requires=[
+        "chardet",
+        "lxml[html_clean]",
+        "lxml-html-clean; python_version < '3.11'",
+        "cssselect"
+    ],
     tests_require=test_deps,
     extras_require=extras,
     classifiers=[
@@ -72,12 +65,12 @@ setup(
         "Topic :: Internet",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: Implementation :: PyPy",
     ],
 )

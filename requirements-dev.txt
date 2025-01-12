@@ -1,4 +1,6 @@
 lxml
+lxml_html_clean
+pytest
 chardet
 nose
 pep8

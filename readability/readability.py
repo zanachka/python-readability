@@ -210,12 +210,13 @@ class Document:
         """
         return clean_attributes(tounicode(self.html, method="html"))
 
-    def summary(self, html_partial=False):
+    def summary(self, html_partial=False, keep_all_images=False):
         """
         Given a HTML file, extracts the text of the article.
 
         :param html_partial: return only the div of the document, don't wrap
                              in html and body tags.
+        :param keep_all_images: Keep all images in summary.
 
         Warning: It mutates internal DOM representation of the HTML document,
         so it is better to call other API methods before this one.
@@ -257,7 +258,7 @@ class Document:
                         article = self.html.find("body")
                         if article is None:
                             article = self.html
-                cleaned_article = self.sanitize(article, candidates)
+                cleaned_article = self.sanitize(article, candidates, keep_all_images)
 
                 article_length = len(cleaned_article or "")
                 retry_length = self.retry_length
@@ -502,7 +503,7 @@ class Document:
         for tag_name in tag_names:
             yield from reversed(node.findall(".//%s" % tag_name))
 
-    def sanitize(self, node, candidates):
+    def sanitize(self, node, candidates, keep_all_images=False):
         MIN_LEN = self.min_text_length
         for header in self.tags(node, "h1", "h2", "h3", "h4", "h5", "h6"):
             if self.class_weight(header) < 0 or self.get_link_density(header) > 0.33:
@@ -563,8 +564,8 @@ class Document:
                 to_remove = False
                 reason = ""
 
-                # if el.tag == 'div' and counts["img"] >= 1:
-                #    continue
+                if keep_all_images and el.tag == 'div' and counts["img"] >= 1:
+                    continue
                 if counts["p"] and counts["img"] > 1 + counts["p"] * 1.3:
                     reason = "too many images (%s)" % counts["img"]
                     to_remove = True

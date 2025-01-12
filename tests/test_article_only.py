@@ -133,3 +133,24 @@ class TestArticleOnly(unittest.TestCase):
         sample = load_sample("si-game.sample.html")
         doc = Document(sample)
         assert '[no-author]' == doc.author()
+
+    def test_keep_images_present(self):
+        sample = load_sample("summary-keep-all-images.sample.html")
+
+        doc = Document(sample)
+
+        assert "<img" in doc.summary(keep_all_images=True)
+
+    def test_keep_images_absent(self):
+        sample = load_sample("summary-keep-all-images.sample.html")
+
+        doc = Document(sample)
+
+        assert "<img" not in doc.summary(keep_all_images=False)
+
+    def test_keep_images_absent_by_defautl(self):
+        sample = load_sample("summary-keep-all-images.sample.html")
+
+        doc = Document(sample)
+
+        assert "<img" not in doc.summary()

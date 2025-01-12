@@ -9,14 +9,8 @@ speed_deps = [
      "cchardet",
 ]
 
-test_deps = [
-    # Test timeouts
-    "wrapt-timeout-decorator",
-]
-
 extras = {
     'speed': speed_deps,
-    'test': test_deps,
 }
 
 # Adapted from https://github.com/pypa/pip/blob/master/setup.py
@@ -54,7 +48,6 @@ setup(
         "lxml-html-clean; python_version < '3.11'",
         "cssselect"
     ],
-    tests_require=test_deps,
     extras_require=extras,
     classifiers=[
         "Environment :: Web Environment",

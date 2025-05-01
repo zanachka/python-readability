@@ -110,29 +110,35 @@ def shorten_title(doc):
             if e.text_content():
                 add_match(candidates, e.text_content(), orig)
 
+    cjk = re.compile('[\u4e00-\u9fff]+')
+
     if candidates:
         title = sorted(candidates, key=len)[-1]
     else:
         for delimiter in [" | ", " - ", " :: ", " / "]:
             if delimiter in title:
                 parts = orig.split(delimiter)
-                if len(parts[0].split()) >= 4:
-                    title = parts[0]
+                p0 = parts[0]
+                pl = parts[-1]
+                if (len(p0.split()) >= 4) or (len(p0) >= 4 and cjk.search(p0)):
+                    title = p0
                     break
-                elif len(parts[-1].split()) >= 4:
-                    title = parts[-1]
+                elif (len(p1.split()) >= 4) or (len(p1) >= 4 and cjk.search(p1)):
+                    title = p1
                     break
         else:
             if ": " in title:
-                parts = orig.split(": ")
-                if len(parts[-1].split()) >= 4:
-                    title = parts[-1]
+                p1 = orig.split(": ")[-1]
+                if (len(p1.split()) >= 4) or (len(p1) >= 4 and cjk.search(p1)):
+                    title = p1
                 else:
                     title = orig.split(": ", 1)[1]
 
-    if not 15 < len(title) < 150:
+    if cjk.search(title) and not (4 <= len(title) < 100):
         return orig
-
+    elif not 15 < len(title) < 150:
+        return orig
+    
     return title
 
 

@@ -123,8 +123,8 @@ def shorten_title(doc):
                 if (len(p0.split()) >= 4) or (len(p0) >= 4 and cjk.search(p0)):
                     title = p0
                     break
-                elif (len(p1.split()) >= 4) or (len(p1) >= 4 and cjk.search(p1)):
-                    title = p1
+                elif (len(pl.split()) >= 4) or (len(pl) >= 4 and cjk.search(pl)):
+                    title = pl
                     break
         else:
             if ": " in title:
@@ -134,11 +134,12 @@ def shorten_title(doc):
                 else:
                     title = orig.split(": ", 1)[1]
 
-    if cjk.search(title) and not (4 <= len(title) < 100):
-        return orig
+    if cjk.search(title):
+        if not (4 <= len(title) < 100):  # Allow length >= 4, cap at 100
+            return orig
     elif not 15 < len(title) < 150:
         return orig
-    
+
     return title
 
 

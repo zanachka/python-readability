@@ -1,9 +1,8 @@
 import re
 try:
-    import cchardet
+    import cchardet as chardet
 except ImportError:
     import chardet
-import sys
 
 
 RE_CHARSET = re.compile(r'<meta.*?charset=["\']*(.+?)["\'>]', flags=re.I)

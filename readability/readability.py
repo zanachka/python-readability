@@ -42,11 +42,11 @@ REGEXES = {
     "divToPElementsRe": re.compile(
         r"<(a|blockquote|dl|div|img|ol|p|pre|table|ul)", re.I
     ),
-    #'replaceBrsRe': re.compile(r'(<br[^>]*>[ \n\r\t]*){2,}',re.I),
-    #'replaceFontsRe': re.compile(r'<(\/?)font[^>]*>',re.I),
-    #'trimRe': re.compile(r'^\s+|\s+$/'),
-    #'normalizeRe': re.compile(r'\s{2,}/'),
-    #'killBreaksRe': re.compile(r'(<br\s*\/?>(\s|&nbsp;?)*){1,}/'),
+    # 'replaceBrsRe': re.compile(r'(<br[^>]*>[ \n\r\t]*){2,}',re.I),
+    # 'replaceFontsRe': re.compile(r'<(\/?)font[^>]*>',re.I),
+    # 'trimRe': re.compile(r'^\s+|\s+$/'),
+    # 'normalizeRe': re.compile(r'\s{2,}/'),
+    # 'killBreaksRe': re.compile(r'(<br\s*\/?>(\s|&nbsp;?)*){1,}/'),
     "videoRe": re.compile(r"https?:\/\/(www\.)?(youtube|vimeo)\.com", re.I),
     # skipFootnoteLink:      /^\s*(\[?[a-z0-9]{1,2}\]?|^|edit|citation needed)\s*$/i,
 }

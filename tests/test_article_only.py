@@ -149,6 +149,7 @@ class TestArticleOnly(unittest.TestCase):
         sample = load_sample("utf-8-kanji.sample.html")
         doc = Document(sample)
         res = doc.summary()
+        assert 0 < len(res) < 10000
 
     def test_author_present(self):
         sample = load_sample("the-hurricane-rubin-carter-denzel-washington.html")
@@ -180,3 +181,53 @@ class TestArticleOnly(unittest.TestCase):
         doc = Document(sample)
 
         assert "<img" not in doc.summary()
+
+    def test_cjk_summary(self):
+        """Check we can extract CJK text correctly."""
+        html = """
+        <html>
+            <head>
+                <title>这是标题</title>
+            </head>
+            <body>
+                <div>一些无关紧要的内容</div>
+                <div class="article-content">
+                    <h1>主要文章标题</h1>
+                    <p>这是主要内容的第一段。</p>
+                    <p>これはコンテンツの第2段落です。</p>
+                    <p>이것은 콘텐츠의 세 번째 단락입니다.</p>
+                    <p>This is the fourth paragraph.</p>
+                </div>
+                <div>More irrelevant stuff</div>
+            </body>
+        </html>
+        """
+        doc = Document(html)
+        summary = doc.summary()
+        # Check that the main CJK content is present in the summary
+        self.assertTrue("这是主要内容的第一段" in summary)
+        self.assertTrue("これはコンテンツの第2段落です" in summary)
+        self.assertTrue("이것은 콘텐츠의 세 번째 단락입니다" in summary)
+        # Check that irrelevant content is mostly gone
+        self.assertFalse("一些无关紧要的内容" in summary)
+
+    def test_shorten_title_delimiter_bug(self):
+        """Test that shorten_title handles delimiters correctly when the last part is valid.
+
+        This specifically targets a potential bug where 'p1' might be used instead of 'pl'.
+        """
+        html = """
+        <html>
+            <head>
+                <title>Short Part | これは長いです</title>
+            </head>
+            <body>
+                <div>Content</div>
+            </body>
+        </html>
+        """
+        doc = Document(html)
+        # With the bug, this call might raise NameError: name 'p1' is not defined
+        # With the fix, it should correctly return the last part.
+        short_title = doc.short_title()
+        self.assertEqual(short_title, "これは長いです")

@@ -4,7 +4,7 @@ PY := .venv/bin/python
 PIP := .venv/bin/pip
 PEP8 := .venv/bin/pep8
 NOSE := .venv/bin/nosetests
-TWINE := twine
+TWINE := .venv/bin/twine
 
 # ###########
 # Tests rule!

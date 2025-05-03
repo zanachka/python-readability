@@ -24,7 +24,7 @@ all: setup develop
 venv: .venv/bin/python
 
 setup: venv
-	$(PIP) install -r requirements-dev.txt
+	$(PIP) install -r requirements-dev.txt | grep -v "already satisfied" || true
 
 .venv/bin/python:
 	test -d .venv || which python3 && python3 -m venv .venv || virtualenv .venv
@@ -44,6 +44,10 @@ develop: .venv/lib/python*/site-packages/readability-lxml.egg-link
 # ###########
 .PHONY: clean_all
 clean_all: clean_venv
+
+.PHONY: build
+build:
+	poetry build
 
 # ###########
 # Deploy

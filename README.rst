@@ -48,7 +48,9 @@ Usage
 
 Change Log
 ----------
-
+-  0.8.4 Better CJK support, thanks @cdhigh
+-  0.8.3.1 Support for python 3.8 - 3.13
+-  0.8.3 We can now save all images via keep_all_images=True (default is to save 1 main image), thanks @botlabsDev
 -  0.8.2 Added article author(s) (thanks @mattblaha)
 -  0.8.1 Fixed processing of non-ascii HTMLs via regexps.
 -  0.8 Replaced XHTML output with HTML5 output in summary() call.

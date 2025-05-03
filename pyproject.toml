@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "readability-lxml"
+version = "0.8.4"
+description = "fast html to text parser (article readability tool) with python 3 support"
+authors = ["Yuri Baburov <burchik@gmail.com>"]
+license = "Apache License 2.0"
+readme = "README.rst"
+
+[tool.poetry.dependencies]
+python = ">=3.8.2,<3.14"
+chardet = "^5.2.0"
+cssselect = "~1.2"
+lxml = {extras = ["html-clean"], version = "^5.4.0"}
+lxml-html-clean = {markers = "python_version < \"3.11\"", version = "^0.4.2"}
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

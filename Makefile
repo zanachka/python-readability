@@ -50,6 +50,7 @@ clean_all: clean_venv
 # ###########
 .PHONY: dist
 dist:
+	$(PY) -m pip install wheel
 	$(PY) setup.py sdist bdist_wheel
 	$(TWINE) check dist/*
 
@@ -57,6 +58,6 @@ dist:
 upload:
 	$(TWINE) upload dist/*
 
-.PHONY: version_update
-version_update:
-	$(EDITOR) setup.py
+.PHONY: bump
+bump:
+	$(EDITOR) readability/__init__.py

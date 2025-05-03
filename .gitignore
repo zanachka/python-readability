@@ -15,3 +15,4 @@ nosetests.xml
 .cache
 /.noseids
 /.venv
+/poetry.lock

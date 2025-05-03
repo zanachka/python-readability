@@ -65,3 +65,9 @@ upload:
 .PHONY: bump
 bump:
 	$(EDITOR) readability/__init__.py
+	$(eval VERSION := $(shell grep "__version__" readability/__init__.py | cut -d'"' -f2))
+	# fix first occurrence of version in pyproject.toml
+	sed -i '0,/version = ".*"/s//version = "$(VERSION)"/' pyproject.toml
+	git commit -m "Bump version to $(VERSION)" pyproject.toml readability/__init__.py
+	git tag $(VERSION)
+	git push --tags

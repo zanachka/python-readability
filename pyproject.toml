@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "readability-lxml"
-version = "0.8.4"
+version = "0.8.4.1"
 description = "fast html to text parser (article readability tool) with python 3 support"
 authors = ["Yuri Baburov <burchik@gmail.com>"]
 license = "Apache License 2.0"
